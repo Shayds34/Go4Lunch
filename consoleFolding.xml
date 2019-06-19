@@ -1,0 +1,9 @@
+<application>
+  <component name="ConsoleFoldingSettings">
+    <option name="addedPositive">
+      <list>
+        <option value="W/art: Attempt to remove non-JNI local reference, dumping thread" />
+      </list>
+    </option>
+  </component>
+</application>

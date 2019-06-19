@@ -1,0 +1,99 @@
+<application>
+  <component name="AppInspectionProfilesVisibleTreeState">
+    <entry key="Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>Android</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NAV_EDITOR.PROPERTIES.AUTO_HIDE" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NAV_EDITOR.PROPERTIES.LEFT" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NAV_EDITOR.PROPERTIES.SPLIT" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NAV_EDITOR.TOOL_ORDER" value="PROPERTIES,structure" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NAV_EDITOR.structure.AUTO_HIDE" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NAV_EDITOR.structure.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NAV_EDITOR.structure.SPLIT" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.COMPONENT_TREE.AUTO_HIDE" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.COMPONENT_TREE.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.COMPONENT_TREE.SPLIT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.PALETTE.AUTO_HIDE" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.PALETTE.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.PALETTE.SPLIT" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.PROPERTIES.AUTO_HIDE" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.PROPERTIES.LEFT" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.PROPERTIES.SPLIT" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.NELE_EDITOR.TOOL_ORDER" value="PALETTE,PROPERTIES,COMPONENT_TREE" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.Preview.PALETTE.AUTO_HIDE" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.Preview.PALETTE.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.Preview.PALETTE.SPLIT" value="false" />
+    <property name="ATTACHED_TOOL_WINDOW.DEFAULT.Preview.TOOL_ORDER" value="PALETTE" />
+    <property name="ATTACHED_TOOL_WINDOW.NAV_EDITOR.LEFT.UNSCALED.WIDTH" value="225" />
+    <property name="ATTACHED_TOOL_WINDOW.NAV_EDITOR.RIGHT.UNSCALED.WIDTH" value="251" />
+    <property name="ATTACHED_TOOL_WINDOW.NAV_EDITOR.TOOL_ORDER" value="PROPERTIES,structure" />
+    <property name="ATTACHED_TOOL_WINDOW.NAV_EDITOR.structure.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.NELE_EDITOR.COMPONENT_TREE.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.NELE_EDITOR.COMPONENT_TREE.SPLIT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.NELE_EDITOR.LEFT.UNSCALED.WIDTH" value="279" />
+    <property name="ATTACHED_TOOL_WINDOW.NELE_EDITOR.PALETTE.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.NELE_EDITOR.RIGHT.UNSCALED.WIDTH" value="251" />
+    <property name="ATTACHED_TOOL_WINDOW.NELE_EDITOR.TOOL_ORDER" value="PALETTE,PROPERTIES,COMPONENT_TREE" />
+    <property name="ATTACHED_TOOL_WINDOW.Preview.LEFT.UNSCALED.WIDTH" value="225" />
+    <property name="ATTACHED_TOOL_WINDOW.Preview.PALETTE.AUTO_HIDE" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.Preview.PALETTE.LEFT" value="true" />
+    <property name="ATTACHED_TOOL_WINDOW.Preview.RIGHT.UNSCALED.WIDTH" value="225" />
+    <property name="ATTACHED_TOOL_WINDOW.Preview.TOOL_ORDER" value="PALETTE" />
+    <property name="AndroidInitConfigurator.V1" value="true" />
+    <property name="AndroidInitConfigurator.V3" value="true" />
+    <property name="AndroidInitConfigurator.V5" value="true" />
+    <property name="AndroidPlatformName" value="Android API 27 Platform (2)" />
+    <property name="ColorChooser.RecentColors" value="255-255-255-255,,,0-0-0-255,,,255-87-34-255,,,105-240-174-255" />
+    <property name="CommitChangeListDialog.DETAILS_SPLITTER_PROPORTION_2" value="0.5281602" />
+    <property name="Copy.OpenInEditor" value="true" />
+    <property name="ExpandBeforeRunStepsPanel" value="true" />
+    <property name="ExpandRunDashboardTypesPanel" value="false" />
+    <property name="FindSplitterProportion" value="0.24652778" />
+    <property name="JUnitSupport.hidePassedTests" value="false" />
+    <property name="LOG_FILTER_HISTORY" value="AuthenticationActivity&#10;PlacesAdapter&#10;configureRecy&#10;GPS&#10;MyMap" />
+    <property name="MemberChooser.copyJavadoc" value="false" />
+    <property name="MemberChooser.showClasses" value="true" />
+    <property name="MobileminApi" value="19" />
+    <property name="SAVED_ANDROID_PACKAGE" value="com.example" />
+    <property name="SearchEveryWhereHistory" value="=&#10;m&#10;.&#10;p&#10;rea" />
+    <property name="ShowDocumentationInToolWindow" value="false" />
+    <property name="SingleInspectionProfilePanel.VERTICAL_DIVIDER_PROPORTION" value="0.4942857" />
+    <property name="android-component-compatibility-check" value="1560851543032" />
+    <property name="build.toolwindow.Build Output.selection.state" value="com.intellij.build.BuildTreeConsoleView" />
+    <property name="build.toolwindow.Build.selection.state" value="com.intellij.build.BuildTreeConsoleView" />
+    <property name="build.toolwindow.Sync.selection.state" value="com.intellij.build.BuildTreeConsoleView" />
+    <property name="build.toolwindow.run.selection.state" value="consoleView" />
+    <property name="colorPickerCategoryProperty" value="MATERIAL_500" />
+    <property name="com.intellij.diagnostic.IdeErrorsDialogactiveTab" value="0" />
+    <property name="com.intellij.history.integration.ui.views.DirectoryHistoryDialog.0" value="168" />
+    <property name="com.intellij.history.integration.ui.views.FileHistoryDialog.0" value="125" />
+    <property name="com.intellij.history.integration.ui.views.FileHistoryDialog.1" value="800" />
+    <property name="decompiler.legal.notice.accepted" value="true" />
+    <property name="file.chooser.recent.files" value="E:/Go4Lunch Alpha/Go4LunchAlpha&#10;E:/Go4Lunch Alpha&#10;E:/Go4Lunch - NEW&#10;E:/RealEstateManager/RealEstateManager/app&#10;E:/RealEstateManager/RealEstateManager&#10;E:/Android/OpenClassrooms/MyFragmentsApp&#10;E:/Activité Android/OpenClassrooms---Parcours-Android-master/Cours_Construisez_une_interface_utilisateur_flexible_et_adaptative/Partie2/MyFragmentApp&#10;E:/Activité Android/OpenClassrooms---Parcours-Android-master/Cours_Construisez_une_interface_utilisateur_flexible_et_adaptative&#10;E:/Projet Android/Burger Quiz&#10;C:/Program Files (x86)/Java/jre1.6.0_02/bin/client&#10;E:/FirebaseOC&#10;E:/OpenClassrooms---Parcours-Android-master/OpenClassrooms---Parcours-Android-master/Cours_Créez_un_backend_scalable_et_performant_sur_Firebase/Partie1&amp;2&amp;3/FirebaseOC&#10;E:/Go4Launch&#10;D:/Android Studio TEST/NewYorkTimesClient-master/NewYorkTimesClient-master&#10;C:/Users/The Shayds/Desktop/MyNews/new-york-times-icon.png&#10;C:/Users/The Shayds/Desktop/MyNews/The New York Times alt.ico&#10;C:/Users/The Shayds/Desktop/MyNews/kisspng-the-new-york-times-company-new-york-city-new-jerse-times-5acae2550dbf21.1655597915232456530563.jpg&#10;C:/Users/The Shayds/Desktop/MyNews/Logo_OpenClassrooms.png&#10;C:/Users/The Shayds/Desktop/MyNews/img_432879.png&#10;E:/nyt-master/MyNewsTEST&#10;E:/MyApplication&#10;E:/MyNews&#10;E:/MyApplication2&#10;E:/MyNews2&#10;D:/Android Studio TEST/OpenClassrooms/OpenClassroomsParcoursAndroidmaster&#10;C:/Users/The Shayds/Desktop&#10;E:/nyt-master/nyt-master&#10;E:/NetApp&#10;D:/Android Studio TEST/OpenClassrooms/OpenClassroomsParcoursAndroidmaster/Données/Partie2&amp;3/NetApp&#10;D:/Android Studio TEST/OpenClassrooms---Parcours-Android-master (1)/OpenClassroomsParcoursAndroidmaster/Données/Partie2&amp;3/NetApp" />
+    <property name="file.gist.reindex.count" value="12505" />
+    <property name="fileTypeChangedCounter" value="2" />
+    <property name="installed.kotlin.plugin.version" value="1.3.31-release-Studio3.4-1" />
+    <property name="kotlin.lastUpdateCheck" value="1526698129148" />
+    <property name="kotlin.plugin.releaseDate" value="1.3.31-release-Studio3.4-1:2019-04-25" />
+    <property name="lastTip" value="45" />
+    <property name="newly.installed.api.level" value="25" />
+    <property name="properties.mode" value="TABLE" />
+    <property name="settings.code.style.selected.tab.JAVA" value="Code Generation" />
+  </component>
+  <component name="RefactoringSettings">
+    <option name="MOVE_PREVIEW_USAGES" value="false" />
+  </component>
+</application>
