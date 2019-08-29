@@ -2,12 +2,14 @@ package com.example.theshayds.go4lunch.utils;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.example.theshayds.go4lunch.pojo.MyPlace;
-import com.example.theshayds.go4lunch.pojo.MyPlaceDetails;
 import com.example.theshayds.go4lunch.pojo.NearbyPlaces;
 import com.example.theshayds.go4lunch.pojo.PlaceDetail;
 import com.example.theshayds.go4lunch.pojo.Results;
+
 import java.util.ArrayList;
+
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -19,6 +21,12 @@ public class ApiRequests {
     private Disposable disposable;
     private ArrayList<MyPlace> mMyPlaceArrayList;
     private ArrayList<MyPlace> mMyPlaceDetailList;
+
+//    public boolean isRequestComplete() {
+//        return isRequestComplete;
+//    }
+
+    public boolean isRequestComplete;
 
     private ApiRequests (Context mContext){
         if (instance != null){
@@ -66,9 +74,10 @@ public class ApiRequests {
         return mMyPlaceArrayList;
     }
 
-    public ArrayList<MyPlace> getNearbyPlacesAndGetDetails(String location){
+    public ArrayList<MyPlace> getNearbyPlacesAndGetDetails(double lat, double lng){
         mMyPlaceDetailList = new ArrayList<>();
-        disposable = ApiStreams.streamNearbyPlacesAndGetDetails(location).subscribeWith(new DisposableObserver<PlaceDetail>() {
+        String currentStringLocation = lat + " , " + lng;
+        disposable = ApiStreams.streamNearbyPlacesAndGetDetails(currentStringLocation).subscribeWith(new DisposableObserver<PlaceDetail>() {
             @Override
             public void onNext(PlaceDetail response) {
                 Log.d(TAG, "onNext: getNearbyPlacesAndGetDetails status: " + response.getResult().getName());
@@ -105,13 +114,26 @@ public class ApiRequests {
 
             @Override
             public void onComplete() {
-                Log.d(TAG, "onComplete: ");
+                // TODO boolean
+
+                Log.d(TAG, "onComplete: " + mMyPlaceDetailList.size());
+                updateUI(lat, lng, mMyPlaceDetailList);
+                isRequestComplete = true;
             }
         });
+        Log.d(TAG, "getNearbyPlacesAndGetDetails: ");
         return mMyPlaceDetailList;
     }
 
+    private void updateUI(double lat, double lng, ArrayList<MyPlace> list) {
+
+        // TODO update Map UI
+        Log.d(TAG, "updateUI: " + lat + "," + lng + " list size: " + list.size());
+
+    }
+
     public ArrayList<MyPlace> getMyPlaceDetailList() {
+
         return mMyPlaceDetailList;
     }
 }

@@ -2,10 +2,13 @@ package com.example.theshayds.go4lunch.utils;
 
 import com.example.theshayds.go4lunch.models.Coworker;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+
+import org.w3c.dom.Document;
 
 public class CoworkerHelper {
 
@@ -43,6 +46,7 @@ public class CoworkerHelper {
     public static Task<Void> updateHasChosen(String uid, boolean hasChosen){
         return CoworkerHelper.getCoworkersCollection().document(uid).update("hasChosen", hasChosen);
     }
+
 
     public static Task<Void> updatePlace(String uid, String placeChoice){
         return CoworkerHelper.getCoworkersCollection().document(uid).update("placeChoice", placeChoice);

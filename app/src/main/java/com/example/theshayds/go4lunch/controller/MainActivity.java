@@ -1,18 +1,7 @@
 package com.example.theshayds.go4lunch.controller;
 
-import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,33 +10,46 @@ import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.example.theshayds.go4lunch.R;
 import com.example.theshayds.go4lunch.fragments.CoworkersFragment;
-import com.example.theshayds.go4lunch.fragments.MyMapFragment;
+import com.example.theshayds.go4lunch.fragments.MyMapFragment2;
 import com.example.theshayds.go4lunch.fragments.PlacesFragment;
-import com.example.theshayds.go4lunch.utils.ApiRequests;
-import com.example.theshayds.go4lunch.utils.GPSTracker;
+import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.example.theshayds.go4lunch.utils.CoworkerHelper;
 import com.facebook.login.LoginManager;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "MainActivity";
-
-    private Context context;
 
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
@@ -57,57 +59,34 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     ImageView mPhoto;
     TextView username, email;
 
-    double mLat, mLng;
-
     ArrayList<MyPlace> mMyPlaceArrayList;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        context = this.getApplicationContext();
-
-        // Firebase Authentication
+        //region {Firebase Authentication}
         mAuth = FirebaseAuth.getInstance();
         GoogleSignInOptions mGoogleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, mGoogleSignInOptions);
+        //endregion
 
-        Location location = GPSTracker.getInstance(this).getLocation();
-        if (location != null) {
-            mLat = location.getLatitude();
-            mLng = location.getLongitude();
+        showFragment(MyMapFragment2.getInstance());
 
-            String currentStringLocation = mLat + " , " + mLng;
-            Log.d(TAG, "onCreate: " + currentStringLocation);
-
-            // mMyPlaceArrayList = ApiRequests.getInstance(this).getNearbyPlaces(currentStringLocation);
-            mMyPlaceArrayList = ApiRequests.getInstance(this).getNearbyPlacesAndGetDetails(currentStringLocation);
-            showFragment(MyMapFragment.newInstance(mLat, mLng, mMyPlaceArrayList));
-        } else {
-            Log.d(TAG, "onCreate: Location is null");
-        }
-
+        //region {Bottom Navigation Listener}
         BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_map_view:
-                        Location mLocation = GPSTracker.getInstance(context).getLocation();
-                        boolean canGetLocation = GPSTracker.getInstance(context).canGetLocation;
-
-                        if (canGetLocation) {
-                            mLat = mLocation.getLatitude();
-                            mLng = mLocation.getLongitude();
-                            showFragment(MyMapFragment.newInstance(mLat, mLng, mMyPlaceArrayList));
-                        }
+                        showFragment(MyMapFragment2.getInstance());
                         return true;
                     case R.id.action_list_view:
-                        showFragment(PlacesFragment.newInstance(mMyPlaceArrayList));
+                        showFragment(PlacesFragment.newInstance());
                         return true;
                     case R.id.action_workmates_view:
                         showFragment(CoworkersFragment.newInstance());
@@ -116,6 +95,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 return false;
             }
         };
+        //endregion
 
         // Bottom Navigation
         BottomNavigationView navigation = findViewById(R.id.bottom_navigation);
@@ -124,20 +104,34 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         this.configureToolbar();
         this.configureNavigationDrawer();
 
-        // TODO MOVE THIS.
-        // Create Firestore Collection "Users" and create current User.
-        String uid = mAuth.getCurrentUser().getUid();
+        //region {Create Firestore Collection "Users" and create current User.}
+        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         String userName = mAuth.getCurrentUser().getDisplayName();
         String urlPicture = (mAuth.getCurrentUser().getPhotoUrl() != null) ? mAuth.getCurrentUser().getPhotoUrl().toString() : null;
 
-        CollectionReference ref = CoworkerHelper.getCoworkersCollection();
 
-        CoworkerHelper.createUser(uid, userName, urlPicture, false, "").addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.e(TAG, "onFailure: ", e);
-            }
-        });
+//        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+//        DatabaseReference userNameID = rootRef.child("users").child(mAuth.getCurrentUser().getUid());
+//        ValueEventListener eventListener = new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                // Creating new user in database
+//                if (!dataSnapshot.exists()) {
+//                    Log.d(TAG, "onDataChange: entered and doesn't exist");
+//                CoworkerHelper.createUser(uid, userName, urlPicture, false, "").addOnFailureListener(e -> Log.e(TAG, "onFailure: ", e));
+//                } else {
+//                    Log.d(TAG, "onDataChange: entered and exist");
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(FirebaseError firebaseError) {
+//
+//            }
+//        };
+
+
+        //endregion
     }
 
     private void configureToolbar() {
@@ -162,7 +156,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         updateUIWhenCreating(headerView);
     }
 
-    private void showFragment(Fragment fragment){
+    public void showFragment(Fragment fragment){
         FragmentManager mFragmentManager = getSupportFragmentManager();
         mFragmentManager.beginTransaction()
                 .replace(R.id.main_container, fragment)
@@ -197,12 +191,23 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = menuItem.getItemId();
         if (id == R.id.nav_lunch) {
 
-            // TODO get User's choice from Firestore database and start PlaceActivity with Intent (PlaceID)
-            CoworkerHelper.getUser(mAuth.getCurrentUser().getUid());
+            //TODO finalise
+            DocumentReference documentReference = CoworkerHelper.getCoworkersCollection().document(Objects.requireNonNull(mAuth.getCurrentUser()).getUid());
+            documentReference.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()){
+                    DocumentSnapshot document = task.getResult();
+                    assert document != null;
+                    if (document.exists()) {
+                        boolean hasChosen = document.getBoolean("hasChosen");
+                        Log.d(TAG, "onComplete: " + hasChosen);
 
-            // TODO WIP
-//            Intent mIntent = new Intent(MainActivity.this, PlaceActivity.class);
-//            startActivity(mIntent);
+                    }else {
+                        Log.d(TAG, "onComplete: No such document");
+                    }
+                } else {
+                    Log.d(TAG, "onComplete: failure.", task.getException());
+                }
+            });
 
         } else if (id == R.id.nav_settings) {
             // TODO
@@ -249,4 +254,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         });
         return true;
     }
+
+
+
+
+
+
 }

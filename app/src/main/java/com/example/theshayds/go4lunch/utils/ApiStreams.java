@@ -33,7 +33,7 @@ public class ApiStreams {
     }
 
     // Get NearbyPlaces and Details.
-    static Observable<PlaceDetail> streamNearbyPlacesAndGetDetails(String location){
+    public static Observable<PlaceDetail> streamNearbyPlacesAndGetDetails(String location){
         return streamNearbyPlaces(location)
                 .concatMapIterable(new Function<NearbyPlaces, Iterable<Results>>() {
                     @Override

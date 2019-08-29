@@ -3,12 +3,15 @@ package com.example.theshayds.go4lunch.controller;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+
+import com.example.theshayds.go4lunch.fragments.MyMapFragment2;
+import com.google.android.material.appbar.AppBarLayout;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,10 +27,8 @@ import com.example.theshayds.go4lunch.utils.ApiRequests;
 import com.example.theshayds.go4lunch.utils.CoworkerAdapter;
 import com.example.theshayds.go4lunch.utils.CoworkerHelper;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -41,14 +42,13 @@ public class PlaceActivity extends AppCompatActivity implements CoworkerAdapter.
     String mPlaceId;
     TextView mPlaceName, mPlaceAddress, mPlacePhone, mPlaceWeb;
     ImageView mPhoto;
-    int position;
     boolean like = false;
 
     private CoworkerAdapter adapter;
 
     FirebaseAuth mAuth;
 
-    ArrayList<MyPlace> mMyPlaceArrayList;
+    MyPlace place;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,16 +60,16 @@ public class PlaceActivity extends AppCompatActivity implements CoworkerAdapter.
         AppBarLayout mAppBarLayout = findViewById(R.id.app_bar);
         mAppBarLayout.setBackground(getDrawable(R.drawable.nav_header_background));
 
-        // Get Detail Place API Singleton
-        mMyPlaceArrayList = ApiRequests.getInstance(this).getMyPlaceDetailList();
-
         // Bind Views.
         mPlaceName = findViewById(R.id.place_name);
         mPlaceAddress = findViewById(R.id.place_address);
         mPhoto = findViewById(R.id.place_photo);
 
         Intent mIntent = getIntent();
-        position = Integer.parseInt(mIntent.getStringExtra("placePosition"));
+        int position = Integer.parseInt(mIntent.getStringExtra("placePosition"));
+        place = MyMapFragment2.getInstance().getMyPlaceArrayList().get(position);
+
+        Log.d(TAG, "onCreate: " + place.getName() + " , " + place.getFormatted_address() + " , " + place.getWebsite());
 
         // Firebase
         coworkerReference = CoworkerHelper.getCoworkersCollection();
@@ -83,7 +83,7 @@ public class PlaceActivity extends AppCompatActivity implements CoworkerAdapter.
             public void onClick(View v) {
 
                 //
-                Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + mMyPlaceArrayList.get(position).getFormatted_phone_number()));
+                Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + place.getFormatted_phone_number()));
                 startActivity(dialIntent);
 
                 // TODO if phone number is null
@@ -95,7 +95,7 @@ public class PlaceActivity extends AppCompatActivity implements CoworkerAdapter.
             public void onClick(View v) {
 
                 //
-                String URI = mMyPlaceArrayList.get(position).getWebsite();
+                String URI = place.getWebsite();
                 Intent websiteIntent = new Intent(Intent.ACTION_VIEW);
                 websiteIntent.setData(Uri.parse(URI));
                 startActivity(websiteIntent);
@@ -123,14 +123,14 @@ public class PlaceActivity extends AppCompatActivity implements CoworkerAdapter.
 
                 // Update Firestore database with user's choice.
                 // If user selects a different place, marker will change color.
-                CoworkerHelper.updatePlace(mAuth.getCurrentUser().getUid(), mMyPlaceArrayList.get(position).getName());
+                CoworkerHelper.updatePlace(mAuth.getCurrentUser().getUid(), place.getName());
                 CoworkerHelper.updateHasChosen(mAuth.getCurrentUser().getUid(), true);
             }
         });
 
         // Give all information from Place Detail to all views.
-        mPlaceName.setText(mMyPlaceArrayList.get(position).getName());
-        mPlaceAddress.setText(mMyPlaceArrayList.get(position).getFormatted_address());
+        mPlaceName.setText(place.getName());
+        mPlaceAddress.setText(place.getFormatted_address());
 
         // Setup default options for GLIDE
         RequestOptions mOptions = new RequestOptions()
@@ -143,7 +143,7 @@ public class PlaceActivity extends AppCompatActivity implements CoworkerAdapter.
                 .dontTransform();
 
         Glide.with(this)
-                .load(mMyPlaceArrayList.get(position).getPhotoURL())
+                .load(place.getPhotoURL())
                 .apply(mOptions)
                 .into(mPhoto);
     }
@@ -151,7 +151,7 @@ public class PlaceActivity extends AppCompatActivity implements CoworkerAdapter.
     private void configureRecyclerView() {
 
         // Get the list of Coworkers with placeName.
-        Query mQuery = coworkerReference.whereEqualTo("placeChoice", mMyPlaceArrayList.get(position).getName());
+        Query mQuery = coworkerReference.whereEqualTo("placeChoice", place.getName());
 
         FirestoreRecyclerOptions<Coworker> mOptions = new FirestoreRecyclerOptions.Builder<Coworker>()
                 .setQuery(mQuery, Coworker.class)

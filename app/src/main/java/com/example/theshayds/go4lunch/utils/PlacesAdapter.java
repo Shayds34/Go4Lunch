@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.location.Location;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -124,8 +124,8 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
             });
 
             // Display distance between the user and the place.
-            Location location = GPSTracker.getInstance(mContext).getLocation();
-            LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+            // TODO Get real Lat Lng
+            LatLng userLatLng = new LatLng(0, 0);
             LatLng placeLatLng = new LatLng(place.getLat(), place.getLng());
 
             double distanceBetween = SphericalUtil.computeDistanceBetween(userLatLng, placeLatLng);

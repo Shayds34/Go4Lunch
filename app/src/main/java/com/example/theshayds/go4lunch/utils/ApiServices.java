@@ -19,11 +19,10 @@ public interface ApiServices {
     String baseUrl = "https://maps.googleapis.com/";
 
     // Nearby Places Request
-    @GET("maps/api/place/nearbysearch/json?sensor=true&radius=2000&type=restaurant&key=AIzaSyBEzFjiM61SPHxlMp601h_2ztVKCg80gi8")
+    @GET("maps/api/place/nearbysearch/json?sensor=true&radius=1000&type=restaurant&key=AIzaSyBEzFjiM61SPHxlMp601h_2ztVKCg80gi8")
     Observable<NearbyPlaces> getNearbyPlaces(@Query("location") String location);
 
     // Details Places Request
-    // Test - Place ID: ChIJ_VpFh6evthIRKI4AKAzvs0I
     @GET ("maps/api/place/details/json?key=AIzaSyBEzFjiM61SPHxlMp601h_2ztVKCg80gi8")
     Observable<PlaceDetail> getDetailsPlaces(@Query("placeid") String placeId);
 

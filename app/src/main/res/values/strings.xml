@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
     <string name="app_name">Go4Lunch</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -216,6 +216,10 @@
         "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
         "when a user tries to pick up one of cards.\n\n"
     </string>
+
+    <string name="CONSUMER_KEY">0X6xgBDdAYx48NmC9oQRBAXJ7</string>
+    <string name="CONSUMER_SECRET">EMmLHXzyi12Qet4fiS41bqzJWqLXsP6S1XbLdmXan9LvrnOS6A</string>
+
     <string name="image_desc_restaurant">Restaurant Picture</string>
     <string name="no_choice_yet">hasn\'t decided yet</string>
 
