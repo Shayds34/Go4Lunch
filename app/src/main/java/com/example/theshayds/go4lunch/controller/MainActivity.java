@@ -1,14 +1,18 @@
 package com.example.theshayds.go4lunch.controller;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
-import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -21,31 +25,33 @@ import androidx.fragment.app.FragmentManager;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.theshayds.go4lunch.R;
+import com.example.theshayds.go4lunch.entities.Prediction;
+import com.example.theshayds.go4lunch.entities.Predictions;
 import com.example.theshayds.go4lunch.fragments.CoworkersFragment;
-import com.example.theshayds.go4lunch.fragments.MyMapFragment2;
+import com.example.theshayds.go4lunch.fragments.MyMapFragment;
 import com.example.theshayds.go4lunch.fragments.PlacesFragment;
 import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.example.theshayds.go4lunch.utils.CoworkerHelper;
+import com.example.theshayds.go4lunch.utils.PlacesAutocompleteAdapter;
 import com.facebook.login.LoginManager;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.twitter.sdk.android.core.models.Place;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -59,12 +65,18 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     ImageView mPhoto;
     TextView username, email;
 
+    private AutoCompleteTextView autoCompleteTextView;
+
     ArrayList<MyPlace> mMyPlaceArrayList;
+
+    FirebaseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        autoCompleteTextView = findViewById(R.id.autocompleteTextViewPlace);
 
         //region {Firebase Authentication}
         mAuth = FirebaseAuth.getInstance();
@@ -73,9 +85,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, mGoogleSignInOptions);
+        currentUser = mAuth.getCurrentUser();
         //endregion
 
-        showFragment(MyMapFragment2.getInstance());
+        showFragment(MyMapFragment.getInstance());
 
         //region {Bottom Navigation Listener}
         BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -83,7 +96,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_map_view:
-                        showFragment(MyMapFragment2.getInstance());
+                        showFragment(MyMapFragment.getInstance());
                         return true;
                     case R.id.action_list_view:
                         showFragment(PlacesFragment.newInstance());
@@ -95,42 +108,46 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 return false;
             }
         };
-        //endregion
 
         // Bottom Navigation
         BottomNavigationView navigation = findViewById(R.id.bottom_navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        //endregion
 
         this.configureToolbar();
         this.configureNavigationDrawer();
 
         //region {Create Firestore Collection "Users" and create current User.}
-        String uid = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-        String userName = mAuth.getCurrentUser().getDisplayName();
-        String urlPicture = (mAuth.getCurrentUser().getPhotoUrl() != null) ? mAuth.getCurrentUser().getPhotoUrl().toString() : null;
+        String uid = currentUser.getUid();
+        String userName = Objects.requireNonNull(currentUser.getDisplayName());
+        String urlPicture = (Objects.requireNonNull(currentUser).getPhotoUrl() != null) ? Objects.requireNonNull(currentUser.getPhotoUrl()).toString() : null;
 
+        DocumentReference docRef = CoworkerHelper.getCoworkersCollection().document(uid);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    assert document != null;
+                    if (!document.exists()) {
+                        // User doesn't exist in database, create user.
+                        Log.d(TAG, "No such document");
+                        CoworkerHelper.createUser(uid, userName, urlPicture, false, "", "", "", "", "", "", "");
+                    }
+                } else {
+                    // Failed getting document
+                    Log.d(TAG, " get failed with ", task.getException());
+                }
+            }
+        });
+        //endregion
 
-//        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-//        DatabaseReference userNameID = rootRef.child("users").child(mAuth.getCurrentUser().getUid());
-//        ValueEventListener eventListener = new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                // Creating new user in database
-//                if (!dataSnapshot.exists()) {
-//                    Log.d(TAG, "onDataChange: entered and doesn't exist");
-//                CoworkerHelper.createUser(uid, userName, urlPicture, false, "").addOnFailureListener(e -> Log.e(TAG, "onFailure: ", e));
-//                } else {
-//                    Log.d(TAG, "onDataChange: entered and exist");
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(FirebaseError firebaseError) {
-//
-//            }
-//        };
-
-
+        //region {Create Notification Channel}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel channel = new NotificationChannel("MyNotifications", "MyNotifications", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
         //endregion
     }
 
@@ -189,42 +206,52 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         // Handle navigation view item clicks here.
         int id = menuItem.getItemId();
-        if (id == R.id.nav_lunch) {
+        switch (id) {
+            case R.id.nav_lunch:
+                DocumentReference documentReference = CoworkerHelper.getCoworkersCollection().document(Objects.requireNonNull(mAuth.getCurrentUser()).getUid());
+                documentReference.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        assert document != null;
+                        if (document.exists()) {
+                            boolean hasChosen = document.getBoolean("hasChosen");
+                            Log.d(TAG, "onComplete: " + hasChosen);
 
-            //TODO finalise
-            DocumentReference documentReference = CoworkerHelper.getCoworkersCollection().document(Objects.requireNonNull(mAuth.getCurrentUser()).getUid());
-            documentReference.get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()){
-                    DocumentSnapshot document = task.getResult();
-                    assert document != null;
-                    if (document.exists()) {
-                        boolean hasChosen = document.getBoolean("hasChosen");
-                        Log.d(TAG, "onComplete: " + hasChosen);
-
-                    }else {
-                        Log.d(TAG, "onComplete: No such document");
+                            if (hasChosen) {
+                                Intent intent = new Intent(MainActivity.this, YourLunchActivity.class);
+                                intent.putExtra("placeName", document.getString("placeName"));
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(this, "You have to choose a place.", Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Log.d(TAG, "onComplete: No such document");
+                        }
+                    } else {
+                        Log.d(TAG, "onComplete: failure.", task.getException());
                     }
-                } else {
-                    Log.d(TAG, "onComplete: failure.", task.getException());
-                }
-            });
+                });
+                break;
 
-        } else if (id == R.id.nav_settings) {
-            // TODO
-        } else if (id == R.id.nav_logout) {
-            // Firebase Logout
-            FirebaseAuth.getInstance().signOut();
-            // Facebook Logout
-            LoginManager.getInstance().logOut();
-            // Google Logout
-            mGoogleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    Intent mIntent = new Intent(MainActivity.this, AuthenticationActivity.class);
-                    startActivity(mIntent);
-                    finish();
-                }
-            });
+            case R.id.nav_settings:
+                // TODO
+                break;
+
+            case R.id.nav_logout:
+                // Firebase & Twitter Logout
+                FirebaseAuth.getInstance().signOut();
+                // Facebook Logout
+                LoginManager.getInstance().logOut();
+                // Google Logout
+                mGoogleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Intent mIntent = new Intent(MainActivity.this, AuthenticationActivity.class);
+                        startActivity(mIntent);
+                        finish();
+                    }
+                });
+                break;
         }
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -236,28 +263,28 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Log.d(TAG, "onCreateOptionsMenu: ");
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-
-        SearchView mSearchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        mSearchView.setQueryHint("Search...");
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                Log.d(TAG, "onQueryTextSubmit: ");
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                Log.d(TAG, "onQueryTextChange: ");
-                return false;
-            }
-        });
         return true;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_search: {
+                Log.d(TAG, "Search initialized.");
 
+                autoCompleteTextView.setVisibility(View.VISIBLE);
+                loadData();
 
+                return true;
+            }
+        }
+        return false;
+    }
 
-
-
+    private void loadData() {
+        List<Prediction> predictionsList = new ArrayList<>();
+        PlacesAutocompleteAdapter placesAutocompleteAdapter = new PlacesAutocompleteAdapter(getApplicationContext(), predictionsList);
+        autoCompleteTextView.setThreshold(1);
+        autoCompleteTextView.setAdapter(placesAutocompleteAdapter);
+    }
 }
