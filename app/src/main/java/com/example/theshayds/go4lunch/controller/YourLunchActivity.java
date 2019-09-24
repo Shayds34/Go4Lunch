@@ -32,8 +32,7 @@ import com.google.firebase.firestore.Query;
 import java.util.Objects;
 
 public class YourLunchActivity extends BaseActivity implements CoworkerAdapter.Listener {
-
-    private String TAG = "YourLunchActivity";
+    private static final String TAG = "YourLunchActivity";
 
     private String placeAddress;
     private String placeName;
@@ -56,8 +55,11 @@ public class YourLunchActivity extends BaseActivity implements CoworkerAdapter.L
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_place);
 
+
         mAuth = FirebaseAuth.getInstance();
         coworkerReference = CoworkerHelper.getCoworkersCollection();
+
+        placeName = getIntent().getStringExtra("placeName");
 
         AppBarLayout mAppBarLayout = findViewById(R.id.app_bar);
         mAppBarLayout.setBackground(getDrawable(R.drawable.nav_header_background));
@@ -66,9 +68,6 @@ public class YourLunchActivity extends BaseActivity implements CoworkerAdapter.L
         mPlaceName = findViewById(R.id.place_name);
         mPlaceAddress = findViewById(R.id.place_address);
         mPhoto = findViewById(R.id.place_photo);
-
-        this.configureRecyclerView();
-        adapter.notifyDataSetChanged();
 
         // Firebase
         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -79,26 +78,26 @@ public class YourLunchActivity extends BaseActivity implements CoworkerAdapter.L
                     DocumentSnapshot document = task.getResult();
                     if (document != null){
                         coworker = document.toObject(Coworker.class);
-
                         if (coworker != null){
                             placeName = coworker.getPlaceName();
                             placePhoto = coworker.getPlacePhoto();
                             placeAddress = coworker.getPlaceAddress();
                         }
                         updateUI();
-                    } else {
-                        Log.d(TAG, "onComplete: document is null");
                     }
-                } else {
-                    Log.d(TAG, "onComplete: task is not successful");
                 }
             });
+        } else {
+            Toast.makeText(this, getResources().getString(R.string.authentication_needed), Toast.LENGTH_SHORT).show();
         }
+
+        this.configureRecyclerView();
+        adapter.notifyDataSetChanged();
 
         findViewById(R.id.button_call).setOnClickListener(v -> {
             String phoneNumberToCall = coworker.getPlacePhone();
             if (phoneNumberToCall == null) {
-                Toast.makeText(YourLunchActivity.this, "There is no phone number for this place.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(YourLunchActivity.this, getResources().getString(R.string.no_phone), Toast.LENGTH_SHORT).show();
             } else {
                 Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + coworker.getPlacePhone()));
                 startActivity(dialIntent);
@@ -108,7 +107,7 @@ public class YourLunchActivity extends BaseActivity implements CoworkerAdapter.L
         findViewById(R.id.button_website).setOnClickListener(v -> {
             String URI = coworker.getPlaceWebsite();
             if (URI == null){
-                Toast.makeText(YourLunchActivity.this, "There is no website for this place.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(YourLunchActivity.this, getResources().getString(R.string.no_website), Toast.LENGTH_SHORT).show();
             } else {
                 Intent websiteIntent = new Intent(Intent.ACTION_VIEW);
                 websiteIntent.setData(Uri.parse(URI));
@@ -159,7 +158,6 @@ public class YourLunchActivity extends BaseActivity implements CoworkerAdapter.L
         FirestoreRecyclerOptions<Coworker> mOptions = new FirestoreRecyclerOptions.Builder<Coworker>()
                 .setQuery(mQuery, Coworker.class)
                 .build();
-
         RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
         adapter = new CoworkerAdapter(this, mOptions, Glide.with(this),this, "YourLunchActivity");
 
@@ -168,6 +166,7 @@ public class YourLunchActivity extends BaseActivity implements CoworkerAdapter.L
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(adapter);
+
     }
 
 
