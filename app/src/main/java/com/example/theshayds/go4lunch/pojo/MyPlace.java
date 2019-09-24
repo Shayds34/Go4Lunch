@@ -32,7 +32,7 @@ public class MyPlace implements Parcelable {
     private String name;
     @SerializedName("opening_hours")
     @Expose
-    private OpeningHours openingHours;
+    private Opening_hours openingHours;
     @SerializedName("photos")
     @Expose
     private Photo[] photos;
@@ -41,7 +41,7 @@ public class MyPlace implements Parcelable {
     private String placeId;
     @SerializedName("rating")
     @Expose
-    private Double rating;
+    private String rating;
     @SerializedName("reference")
     @Expose
     private String reference;
@@ -156,7 +156,7 @@ public class MyPlace implements Parcelable {
         if (in.readByte() == 0) {
             rating = null;
         } else {
-            rating = in.readDouble();
+            rating = in.readString();
         }
         reference = in.readString();
         scope = in.readString();
@@ -357,7 +357,7 @@ public class MyPlace implements Parcelable {
      * @return
      * The openingHours
      */
-    public OpeningHours getOpeningHours() {
+    public Opening_hours getOpeningHours() {
         return openingHours;
     }
 
@@ -366,7 +366,7 @@ public class MyPlace implements Parcelable {
      * @param openingHours
      * The opening_hours
      */
-    public void setOpeningHours(OpeningHours openingHours) {
+    public void setOpeningHours(Opening_hours openingHours) {
         this.openingHours = openingHours;
     }
 
@@ -394,7 +394,7 @@ public class MyPlace implements Parcelable {
      * @return
      * The rating
      */
-    public Double getRating() {
+    public String getRating() {
         return rating;
     }
 
@@ -403,7 +403,7 @@ public class MyPlace implements Parcelable {
      * @param rating
      * The rating
      */
-    public void setRating(Double rating) {
+    public void setRating(String rating) {
         this.rating = rating;
     }
 
@@ -513,7 +513,7 @@ public class MyPlace implements Parcelable {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeDouble(rating);
+            dest.writeString(rating);
         }
         dest.writeString(reference);
         dest.writeString(scope);
