@@ -3,52 +3,63 @@ package com.example.theshayds.go4lunch.controller;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-
-import com.example.theshayds.go4lunch.fragments.MyMapFragment;
-import com.google.android.material.appbar.AppBarLayout;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.theshayds.go4lunch.models.Coworker;
-import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.example.theshayds.go4lunch.R;
+import com.example.theshayds.go4lunch.models.Coworker;
+import com.example.theshayds.go4lunch.pojo.PlaceDetail;
+import com.example.theshayds.go4lunch.utils.ApiStreams;
 import com.example.theshayds.go4lunch.utils.CoworkerAdapter;
 import com.example.theshayds.go4lunch.utils.CoworkerHelper;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.Query;
+
+import java.util.Objects;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
 public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Listener{
     private String TAG = "PlaceActivity";
 
+    //region {Initializing}
+    // Place info
+    private String placeAddress;
+    private String placeName;
+    private String placePhoto;
+    private String phoneNumberToCall;
+    private String placeURI;
+
     // Firebase
+    FirebaseAuth mAuth;
     private CollectionReference coworkerReference;
 
+    // Views
     TextView mPlaceName;
     TextView mPlaceAddress;
     ImageView mPhoto;
+
     boolean like = false;
-
+    Disposable disposable;
     private CoworkerAdapter adapter;
-
-    FirebaseAuth mAuth;
-
-    MyPlace place;
+    //endregion
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,6 +67,7 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
         setContentView(R.layout.activity_place);
 
         mAuth = FirebaseAuth.getInstance();
+        coworkerReference = CoworkerHelper.getCoworkersCollection();
 
         AppBarLayout mAppBarLayout = findViewById(R.id.app_bar);
         mAppBarLayout.setBackground(getDrawable(R.drawable.nav_header_background));
@@ -65,35 +77,26 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
         mPlaceAddress = findViewById(R.id.place_address);
         mPhoto = findViewById(R.id.place_photo);
 
-        Intent mIntent = getIntent();
-        int position = Integer.parseInt(mIntent.getStringExtra("placePosition"));
-        place = MyMapFragment.getInstance().getMyPlaceArrayList().get(position);
-
-        // Firebase
-        coworkerReference = CoworkerHelper.getCoworkersCollection();
-
-        // Setup RecyclerView
-        this.configureRecyclerView();
-        adapter.notifyDataSetChanged();
+        // Get placeId from Intent Extras to fetch Place Info.
+        String placeId = getIntent().getStringExtra("placeId");
+        this.fetchPlaceInfo(placeId);
 
         findViewById(R.id.button_call).setOnClickListener(v -> {
-            String phoneNumberToCall = place.getFormatted_phone_number();
             if (phoneNumberToCall == null) {
-                Toast.makeText(PlaceActivity.this, "There is no phone number for this place.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(PlaceActivity.this, getResources().getString(R.string.no_phone), Toast.LENGTH_SHORT).show();
             } else {
-                Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + place.getFormatted_phone_number()));
+                Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumberToCall));
                 startActivity(dialIntent);
             }
         });
 
         findViewById(R.id.button_website).setOnClickListener(v -> {
-            String URI = place.getWebsite();
-            if (URI != null) {
-                Intent websiteIntent = new Intent(Intent.ACTION_VIEW);
-                websiteIntent.setData(Uri.parse(URI));
-                startActivity(websiteIntent);
+            if (placeURI == null){
+                Toast.makeText(PlaceActivity.this, getResources().getString(R.string.no_website), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(PlaceActivity.this, "There is no website for this place.", Toast.LENGTH_SHORT).show();
+                Intent websiteIntent = new Intent(Intent.ACTION_VIEW);
+                websiteIntent.setData(Uri.parse(placeURI));
+                startActivity(websiteIntent);
             }
         });
 
@@ -106,66 +109,75 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
                 like = true;
             }
         });
+    }
 
-        findViewById(R.id.fab).setOnClickListener(v -> {
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            // Update Firestore database with user's choice.
-            if (currentUser != null) {
-                String uid = currentUser.getUid();
-                String userName = currentUser.getDisplayName();
-                String urlPicture = String.valueOf(currentUser.getPhotoUrl());
-                String placeID = place.getPlaceId();
-                String placeName = place.getName();
-                String placeAddress = place.getFormatted_address();
-                String placeWebsite = place.getWebsite();
-                String placePhoto = place.getPhotoURL();
-                String placePhone = place.getFormatted_phone_number();
-                String placeUrl = place.getUrl();
+    private void fetchPlaceInfo(String placeId) {
+        disposable = ApiStreams.streamDetailsPlaces(placeId).subscribeWith(new DisposableObserver<PlaceDetail>() {
+            @Override
+            public void onNext(PlaceDetail placeDetail) {
+                Log.d(TAG, "onNext: " + placeDetail.getStatus());
+                if (placeDetail.getResult() != null) {
+                    placeName = placeDetail.getResult().getName();
+                    placeAddress = placeDetail.getResult().getVicinity();
+                    if (placeDetail.getResult().getPhotos() != null) {
+                        placePhoto = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="
+                                + placeDetail.getResult().getPhotos()[0].getPhotoReference()
+                                + "&key=AIzaSyBEzFjiM61SPHxlMp601h_2ztVKCg80gi8";
+                    }
+                    phoneNumberToCall = placeDetail.getResult().getFormatted_phone_number();
+                    placeURI = placeDetail.getResult().getUrl();
+                }
+            }
 
-                CoworkerHelper.updatePlace(uid, userName, urlPicture, true, placeID, placeName, placeAddress, placeWebsite, placePhoto, placePhone, placeUrl);
-            } else {
-                Toast.makeText(PlaceActivity.this, "You should connect to the application first.", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, "onError: " + e);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: ");
+                updateUI();
+                configureRecyclerView();
+                adapter.notifyDataSetChanged();
             }
         });
-
-        updateUI();
     }
 
     public void updateUI(){
         // Give all information from Place Detail to all views.
-        mPlaceName.setText(place.getName());
-        mPlaceAddress.setText(place.getFormatted_address());
+        mPlaceName.setText(placeName);
+        mPlaceAddress.setText(placeAddress);
 
         // Setup default options for GLIDE
         RequestOptions mOptions = new RequestOptions()
                 .centerCrop()
-                .placeholder(R.drawable.ic_restaurant_marker_green)
-                .error(R.drawable.ic_restaurant_marker_green)
+                .placeholder(R.drawable.ic_photo_camera_black_24dp)
+                .error(R.drawable.ic_photo_camera_black_24dp)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .priority(Priority.HIGH)
                 .dontAnimate()
                 .dontTransform();
 
         Glide.with(this)
-                .load(place.getPhotoURL())
+                .load(placePhoto)
                 .apply(mOptions)
                 .into(mPhoto);
     }
 
     private void configureRecyclerView() {
-
         // Get the list of Coworkers with placeName.
-        Query mQuery = coworkerReference.whereEqualTo("placeName", place.getName());
-
+        Query mQuery = coworkerReference.whereEqualTo("placeName", placeName);
         FirestoreRecyclerOptions<Coworker> mOptions = new FirestoreRecyclerOptions.Builder<Coworker>()
                 .setQuery(mQuery, Coworker.class)
                 .build();
-
         RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
         adapter = new CoworkerAdapter(this, mOptions, Glide.with(this),this, "PlaceActivity");
 
         DividerItemDecoration mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), DividerItemDecoration.VERTICAL);
-        mDividerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.line_divider));
+        mDividerItemDecoration.setDrawable(Objects.requireNonNull(ResourcesCompat.getDrawable(getResources(), R.drawable.line_divider, null)));
+
+        adapter.startListening();
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(adapter);
@@ -174,12 +186,6 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
     @Override
     public void onDataChanged() {
         adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        adapter.startListening();
     }
 
     @Override
