@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -87,8 +88,6 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
 
         setContentView(R.layout.activity_authentication);
 
-        // mNetworkStatus = new NetworkStatus();
-
         // BindViews
         mEmailField = findViewById(R.id.fieldEmail);
         mPasswordField = findViewById(R.id.fieldPassword);
@@ -100,6 +99,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
         findViewById(R.id.sign_in_with_twitter).setOnClickListener(this);
 
         // Get Firebase instance
+        FirebaseApp.initializeApp(this);
         mAuth = FirebaseAuth.getInstance();
 
         // Get CurrentUser to pass Sign In / Log In if User was already signed/logged in.
@@ -177,10 +177,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                         assert mUser != null;
                         Toast.makeText(AuthenticationActivity.this, "Your account with email: " + mUser.getEmail() + " has been created. ", Toast.LENGTH_SHORT).show();
 
-                        Intent mIntent = new Intent(AuthenticationActivity.this, MainActivity.class);
-                        startActivity(mIntent);
-                        finish();
-
+                        startMainActivity();
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -206,9 +203,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                         // Sign in success, update UI with the signed-in user's information.
                         Log.d(TAG, "signInWithEmail:success");
 
-                        Intent mIntent = new Intent(AuthenticationActivity.this, MainActivity.class);
-                        startActivity(mIntent);
-                        finish();
+                        startMainActivity();
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -255,12 +250,10 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
         mAuth.signInWithCredential(mCredential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()){
-                        // Sign in succes, update Ui with the signed-in user's information
+                        // Sign in success, update Ui with the signed-in user's information
                         Log.d(TAG, "signInWithGoogle: success");
 
-                        Intent mIntent = new Intent(AuthenticationActivity.this, MainActivity.class);
-                        startActivity(mIntent);
-                        finish();
+                        startMainActivity();
                     } else {
                         // If sign in fails, display a message to user.
                         Log.w(TAG, "signInWithGoogle:failure", task.getException());
@@ -288,9 +281,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                     if (task.isSuccessful()){
                         Log.d(TAG, "signInWithFacebook:success");
 
-                        Intent mIntent = new Intent(AuthenticationActivity.this, MainActivity.class);
-                        startActivity(mIntent);
-                        finish();
+                        startMainActivity();
                     } else {
                         // If sign in fails, display a message to user.
                         Log.w(TAG, "signInWithFacebook:failure", task.getException());
@@ -312,9 +303,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                 .addOnCompleteListener(this, task -> {
                     Log.d(TAG, "onComplete: ");
 
-                    Intent mIntent = new Intent(AuthenticationActivity.this, MainActivity.class);
-                    startActivity(mIntent);
-                    finish();
+                    startMainActivity();
                 })
                 .addOnFailureListener(this, e -> Log.d(TAG, "onFailure: "));
     }
@@ -346,12 +335,16 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
     }
     //endregion
 
+    // Start Activity
+    private void startMainActivity(){
+        Intent mIntent = new Intent(AuthenticationActivity.this, MainActivity.class);
+        startActivity(mIntent);
+        finish();
+    }
+
     @Override
     public void onClick(View v) {
         int i = v.getId();
-
-        // Before the click, check Network status.
-        // if (mNetworkStatus.isOnline()){
             if (i == R.id.create_with_email){
                 createAccount(mEmailField.getText().toString(), mPasswordField.getText().toString());
             } else if (i == R.id.sign_in_with_email){
@@ -359,8 +352,5 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
             } else if (i == R.id.sign_in_with_google) {
                 signInWithGoogle();
             }
-        // } else {
-            // Snackbar.make(v, "There is no Internet connexion available. Please connect to the Internet.", Snackbar.LENGTH_LONG).show();
-        // }
     }
 }
