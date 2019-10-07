@@ -18,6 +18,7 @@ public class MyPlace implements Parcelable {
     private String user_ratings_total;
     private String price_level;
     private String formatted_phone_number;
+    private int distance;
     @SerializedName("geometry")
     @Expose
     private Geometry geometry;
@@ -560,5 +561,13 @@ public class MyPlace implements Parcelable {
 
     public String getPhotoURL() {
         return photoURL;
+    }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
+    }
+
+    public int getDistance() {
+        return distance;
     }
 }

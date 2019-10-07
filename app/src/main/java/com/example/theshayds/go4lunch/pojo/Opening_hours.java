@@ -1,18 +1,28 @@
 package com.example.theshayds.go4lunch.pojo;
 
-class Opening_hours {
-    private String open_now;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
-    private Periods[] periods;
+public class Opening_hours {
 
-    private String[] weekday_text;
+     @SerializedName("open_now")
+     @Expose
+     private boolean open_now;
 
-    public String getOpen_now ()
+     @SerializedName("periods")
+     @Expose
+     private Periods[] periods;
+
+     @SerializedName("weekday_text")
+     @Expose
+     private String[] weekday_text;
+
+    public boolean getOpen_now ()
     {
         return open_now;
     }
 
-    public void setOpen_now (String open_now)
+    public void setOpen_now (boolean open_now)
     {
         this.open_now = open_now;
     }

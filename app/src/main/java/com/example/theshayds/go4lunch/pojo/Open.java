@@ -1,9 +1,18 @@
 package com.example.theshayds.go4lunch.pojo;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 class Open {
+
+    @SerializedName("time")
+    @Expose
     private String time;
 
+    @SerializedName("day")
+    @Expose
     private String day;
+
 
     public String getTime ()
     {
