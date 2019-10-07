@@ -43,7 +43,7 @@ before_script:
 
 script:
   - android list target
-  - ./gradlew connectedAndroidTest --warning-mode=all --stacktrace --info --debug
+  - ./gradlew connectedAndroidTest --warning-mode=all --stacktrace --info
   - ./gradlew test jacocoTestReport
 
 after_success:
