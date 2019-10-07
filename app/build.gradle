@@ -1,5 +1,40 @@
 apply plugin: 'com.android.application'
 
+apply plugin: 'jacoco'
+
+task jacocoTestReport(type: JacocoReport, dependsOn: 'testDebugUnitTest'){
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        html.destination file ("${buildDir}/jacocoHtml")
+    }
+
+    def fileFilter = ['**/R.class',
+                      '**/R$.class',
+                      '**/BuildConfig.*',
+                      '**/Manifest*.*',
+                      '**/*Test*.*',
+                      'android/**/*.*']
+
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+
+    getSourceDirectories().setFrom(mainSrc)
+    getClassDirectories().setFrom(debugTree)
+    getExecutionData().setFrom("$buildDir/test/jacoco/jacocoTest.exec")
+
+    // executionData = files("${buildDir}/jacoco/testDebugUnitTest.exec")
+}
+
+jacoco {
+    toolVersion = "0.8.1"
+}
+
+tasks.withType(Test){
+    jacoco.includeNoLocationClasses = true
+}
+
 android {
     compileSdkVersion 28
     defaultConfig {
