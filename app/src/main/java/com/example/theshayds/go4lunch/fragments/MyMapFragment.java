@@ -41,9 +41,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -82,9 +80,8 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     //endregion
 
     private GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
 
-    public ArrayList<MyPlace> getMyPlaceArrayList() {
+    ArrayList<MyPlace> getMyPlaceArrayList() {
         return mMyPlaceArrayList;
     }
 
@@ -111,6 +108,8 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Log.d(TAG, "onCreateView: ");
 
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_my_map_fragment2, container, false);
@@ -144,6 +143,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        Log.d(TAG, "onMapReady: ");
 
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -162,11 +162,11 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
         }
 
         buildGoogleApiClient();
-
         mMap.setMyLocationEnabled(true);
     }
 
     private synchronized void buildGoogleApiClient() {
+        Log.d(TAG, "buildGoogleApiClient: ");
         mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -176,11 +176,13 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     private void addPlacesToMap(String currentStringLocation) {
+        Log.d(TAG, "addPlacesToMap: ");
         mMyPlaceArrayList = new ArrayList<>();
-        disposable = ApiStreams.streamNearbyPlacesAndGetDetails(currentStringLocation).subscribeWith(new DisposableObserver<PlaceDetail>() {
+        disposable = ApiStreams.streamNearbyPlacesAndGetDetails(currentStringLocation, getResources().getString(R.string.google_api_key)).subscribeWith(new DisposableObserver<PlaceDetail>() {
             @Override
             public void onNext(PlaceDetail response) {
                 MyPlace mPlace = new MyPlace();
+                Log.d(TAG, "onNext: " + response.getStatus());
 
                 if (response.getResult() != null) {
                     // Working
@@ -193,9 +195,19 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
                     mPlace.setWebsite(response.getResult().getWebsite());
                     mPlace.setRating(response.getResult().getRating());
 
-                    // TODO
-                    mPlace.setOpeningHours(response.getResult().getOpening_hours());
-                    Log.d(TAG, "onNext: Opening Hours " + mPlace.getOpeningHours());
+                    // Display distance between the user and the place.
+                    LatLng userLatLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                    LatLng placeLatLng = new LatLng(response.getResult().getGeometry().getLocation().getLat(), response.getResult().getGeometry().getLocation().getLng());
+                    double distanceBetween = SphericalUtil.computeDistanceBetween(userLatLng, placeLatLng);
+                    int distanceInMeters = (int) distanceBetween;
+                    mPlace.setDistance(distanceInMeters);
+
+                    try {
+                        mPlace.setOpeningHours(response.getResult().getOpening_hours());
+                        Log.d(TAG, "onNext: " + response.getResult().getOpening_hours());
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
 
                     mPlace.setPhotos(response.getResult().getPhotos());
                     if (response.getResult().getPhotos() != null) {
@@ -204,7 +216,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
                                 + response.getResult().getPhotos()[0].getPhotoReference()
                                 + "&key=AIzaSyBEzFjiM61SPHxlMp601h_2ztVKCg80gi8");
                     }
-
                     mMyPlaceArrayList.add(mPlace);
                 }
             }
@@ -215,60 +226,52 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
 
             @Override
             public void onComplete() {
-                Log.d(TAG, "onComplete: " + mMyPlaceArrayList.size());
-
                 progressBar.setVisibility(View.GONE);
                 mapView.setVisibility(View.VISIBLE);
-
-                try {
-                    mMap.clear();
-
-                    // This loop will go through all the results and add marker on each location.
-                    for (int i = 0; i < mMyPlaceArrayList.size(); i++) {
-                        MyPlace place = mMyPlaceArrayList.get(i);
-
-                        // Change marker's color according to users' choices
-                        int finalI = i;
-                        CoworkerHelper.getCoworkersCollection().whereEqualTo("placeName", place.getName())
-                                .get()
-                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                        boolean isEmpty = Objects.requireNonNull(task.getResult()).isEmpty();
-
-                                        myMarker = mMap.addMarker(new MarkerOptions()
-                                                .position(new LatLng(place.getLat(), place.getLng()))
-                                                .title(place.getName())
-                                                .snippet(String.valueOf(finalI)));
-
-                                        if (isEmpty){
-                                            myMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
-
-                                        } else {
-                                            myMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
-                                        }
-                                    }
-                                });
-                    }
-                } catch (Exception e) {
-                    Log.d("onResponse", "There is an error");
-                    e.printStackTrace();
-                }
-
-                mMap.setOnMarkerClickListener(marker -> {
-                    // Start new PlaceActivity
-                    Intent intent = new Intent(mContext, PlaceActivity.class);
-                    intent.putExtra("placePosition", marker.getSnippet());
-
-                    MyPlace place = mMyPlaceArrayList.get(Integer.parseInt(marker.getSnippet()));
-                    intent.putExtra("myPlaceList", mMyPlaceArrayList);
-                    intent.putExtra("myPlace", place);
-                    startActivity(intent);
-                    return true;
-                });
+                updateMarkers(mMyPlaceArrayList);
             }
         });
-        Log.d(TAG, "getNearbyPlacesAndGetDetails: ");
+    }
+
+    private void updateMarkers(ArrayList<MyPlace> mMyPlaceArrayList) {
+        Log.d(TAG, "updateMarkers: ");
+        try {
+            mMap.clear();
+
+            // This loop will go through all the results and add marker on each location.
+            for (int i = 0; i < mMyPlaceArrayList.size(); i++) {
+                MyPlace place = mMyPlaceArrayList.get(i);
+
+                CoworkerHelper.getCoworkersCollection().whereEqualTo("placeName", place.getName())
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            boolean isEmpty = Objects.requireNonNull(task.getResult()).isEmpty();
+
+                            myMarker = mMap.addMarker(new MarkerOptions()
+                                    .position(new LatLng(place.getLat(), place.getLng()))
+                                    .title(place.getName())
+                                    .snippet(place.getPlaceId()));
+
+                            // Change marker's color according to users' choices
+                            if (isEmpty){
+                                myMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
+                            } else {
+                                myMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
+                            }
+                        });
+            }
+        } catch (Exception e) {
+            Log.d("onResponse", "There is an error");
+            e.printStackTrace();
+        }
+
+        mMap.setOnMarkerClickListener(marker -> {
+            // Start new PlaceActivity
+            Intent intent = new Intent(mContext, PlaceActivity.class);
+            intent.putExtra("placeId", marker.getSnippet());
+            startActivity(intent);
+            return true;
+        });
     }
 
     @Override
@@ -278,6 +281,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     private void checkLocationPermission() {
+        Log.d(TAG, "checkLocationPermission: ");
         if (ContextCompat.checkSelfPermission(mContext,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED){
@@ -303,6 +307,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     private boolean isGooglePlayServicesAvailable() {
+        Log.d(TAG, "isGooglePlayServicesAvailable: ");
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
         int result = googleAPI.isGooglePlayServicesAvailable(mContext);
         if (result != ConnectionResult.SUCCESS){
@@ -317,24 +322,25 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        mLocationRequest = new LocationRequest();
+        Log.d(TAG, "onConnected: ");
+        LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         mLocationRequest.setFastestInterval(UPDATE_FASTEST_INTERVAL);
         mLocationRequest.setSmallestDisplacement(UPDATE_DISPLACEMENT);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
         if (ContextCompat.checkSelfPermission(mContext,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
     }
 
-
-
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged: entered");
 
         mLastLocation = location;
+        mMap.clear();
 
         mLatitude = location.getLatitude();
         mLongitude = location.getLongitude();

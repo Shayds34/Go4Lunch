@@ -79,23 +79,21 @@
     <style name="LoginButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-
         <item name="android:minHeight">50dp</item>
-
         <item name="android:layout_marginTop">10dp</item>
         <item name="android:layout_marginStart">50dp</item>
         <item name="android:layout_marginEnd">50dp</item>
-
         <item name="android:background">@drawable/rounded_rectangle</item>
-
         <item name="android:paddingTop">14dp</item>
         <item name="android:paddingStart">14dp</item>
         <item name="android:paddingBottom">14dp</item>
         <item name="android:paddingEnd">14dp</item>
-
         <item name="android:textAllCaps">false</item>
-
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="PreferenceTheme">
+        <item name="android:windowBackground">@color/colorWhite</item>
     </style>
 
 

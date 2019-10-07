@@ -1,18 +1,18 @@
 package com.example.theshayds.go4lunch.fragments;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.theshayds.go4lunch.R;
@@ -25,7 +25,6 @@ import com.google.firebase.firestore.Query;
 
 import java.util.Objects;
 
-
 public class CoworkersFragment extends Fragment implements CoworkerAdapter.Listener {
     public static final String TAG = "CoworkersFragment";
 
@@ -35,9 +34,6 @@ public class CoworkersFragment extends Fragment implements CoworkerAdapter.Liste
     // Use for Data
     private View mView;
     private CoworkerAdapter adapter;
-
-    // Use for Design UI
-    ProgressBar mProgressBar;
 
     public static CoworkersFragment newInstance() {
         CoworkersFragment mFragment = new CoworkersFragment();
@@ -57,7 +53,6 @@ public class CoworkersFragment extends Fragment implements CoworkerAdapter.Liste
         Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_coworkers_layout, container, false);
         mView = view;
-        mProgressBar = mView.findViewById(R.id.progress_bar);
 
         // Firebase
         coworkerReference = CoworkerHelper.getCoworkersCollection();
@@ -76,13 +71,11 @@ public class CoworkersFragment extends Fragment implements CoworkerAdapter.Liste
     }
 
     private void configureRecyclerView() {
-        Log.d(TAG, "configureRecyclerView: ");
         Query mQuery = coworkerReference.orderBy("hasChosen");
 
         FirestoreRecyclerOptions<Coworker> mOptions = new FirestoreRecyclerOptions.Builder<Coworker>()
                 .setQuery(mQuery, Coworker.class)
                 .build();
-
         RecyclerView mRecyclerView = mView.findViewById(R.id.recycler_view);
         adapter = new CoworkerAdapter(getActivity(), mOptions, Glide.with(Objects.requireNonNull(getActivity())),this, "CoworkersFragment");
 

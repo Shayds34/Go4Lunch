@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_subtitle">Find a nice restaurant and invite your co-workers for lunch!</string>
-    <string name="image_desc_restaurant">Restaurant Picture</string>
+    <string name="image_desc_restaurant" translatable="false">Restaurant Picture</string>
+    <string name="no_website">There is no website for this place.</string>
+    <string name="no_phone">There is no phone number for this place.</string>
+    <string name="authentication_needed">You mush authenticate to the application first.</string>
+    <string name="search">Search...</string>
+    <string name="search_restaurant">Search a restaurant...</string>
+    <string name="food_icon" translatable="false">Food icon</string>
+    <string name="open_until">Open until</string>
+    <string name="closed">Closed</string>
+    <string name="hour_symbol">:</string>
+    <string name="place_open_close_txt">Open until</string>
+    <string name="choose_a_place">You have to choose a place.</string>
+    <string name="notifications_off">Enable notifications system</string>
+    <string name="notifications_on">Disable notifications system</string>
+    <string name="title_help">Help</string>
+    <string name="title_about">About</string>
 </resources>

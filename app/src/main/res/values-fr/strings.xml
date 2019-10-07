@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_search" translatable="false">Rechercher...</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="app_subtitle">Trouvez un bon restaurant et invitez vos collègues pour déjeuner !</string>
+    <string name="auth_failed">Echec d\'authentification</string>
+    <string name="authentication_needed">Vous devez vous identifier à l\'application</string>
+    <string name="button_login_text_logged">Connexion</string>
+    <string name="button_login_text_not_logged">Inscription</string>
+    <string name="choose_a_place">Vous devez choisir un restaurant.</string>
+    <string name="closed">Fermé</string>
+    <string name="connection_succeed">Connexion réussie</string>
+    <string name="create_account">Créer un compte</string>
+    <string name="title_help">Aide</string>
+    <string name="title_dashboard">Tableau de bord</string>
+    <string name="title_about">À propos</string>
+    <string name="sign_in">Inscription</string>
+    <string name="search_restaurant">Rechercher un restaurant...</string>
+    <string name="search">Rechercher...</string>
+    <string name="place_open_close_txt">"Ouvert jusqu'à "</string>
+    <string name="open_until">"Ouvert jusqu'à "</string>
+    <string name="notifications_off">Activer les notifications</string>
+    <string name="notifications_on">Désactivier les notifications</string>
+    <string name="no_website">Aucun site web disponible pour ce restaurant.</string>
+    <string name="no_phone">Aucun numéro de téléphone pour ce restaurant.</string>
+    <string name="no_choice_yet">" n'a toujours pas choisi"</string>
+    <string name="loading">Chargement...</string>
+    <string name="hour_symbol">h</string>
+    <string name="hint_email">Courriel</string>
+    <string name="hint_password">Mot de pass</string>
+    <string name="hint_phone_number">Numéro de téléphone</string>
+    <string name="hint_user_id">ID utilisateur</string>
+    <string name="google_title_text">Inscription Google</string>
+    <string name="email_sign_in">Inscription avec courriel</string>
+    <string name="title_home">Accueuil</string>
+    <string name="title_notifications">Recevoir une notification quotidienne</string>
+</resources>

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "110297308024-mb65n9hamhjncflks3pvjgths0mfp9u3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.theshayds.go4lunch",
+            "certificate_hash": "0406acbbfe2a043b4c79db4497bdb945268b74ca"
+          }
+        },
+        {
           "client_id": "110297308024-nsq095gookjsdlpdkqqj5crjjn06ftdd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -23,36 +31,7 @@
           }
         },
         {
-          "client_id": "110297308024-vtvbecp8pb8pn3ug6fk8qa9muia4rtn9.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyD630gHcU5CEdt_VhbNmgTJYEvZLzoFxq8"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "110297308024-vtvbecp8pb8pn3ug6fk8qa9muia4rtn9.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:110297308024:android:d7202cce949a3481",
-        "android_client_info": {
-          "package_name": "com.openclassrooms.firebaseoc"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "110297308024-vtvbecp8pb8pn3ug6fk8qa9muia4rtn9.apps.googleusercontent.com",
+          "client_id": "110297308024-crl9jb7a289bm6kmgppk7nsds7isvual.apps.googleusercontent.com",
           "client_type": 3
         }
       ],

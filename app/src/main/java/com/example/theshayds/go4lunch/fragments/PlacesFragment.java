@@ -1,6 +1,7 @@
 package com.example.theshayds.go4lunch.fragments;
 
 
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +18,8 @@ import com.example.theshayds.go4lunch.R;
 import com.example.theshayds.go4lunch.utils.PlacesAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class PlacesFragment extends Fragment {
     public static final String TAG = "PlacesFragment";
@@ -50,13 +53,15 @@ public class PlacesFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_places_layout, container, false);
         mView = view;
-        myPlaceArrayList = MyMapFragment2.getInstance().getMyPlaceArrayList();
+        myPlaceArrayList = MyMapFragment.getInstance().getMyPlaceArrayList();
         configureRecyclerView();
         return view;
     }
 
     private void configureRecyclerView() {
         mRecyclerView = mView.findViewById(R.id.recycler_view);
+
+        Collections.sort(myPlaceArrayList, ((o1, o2) -> o1.getDistance() - o2.getDistance()));
         adapter = new PlacesAdapter(getActivity(), myPlaceArrayList);
 
         DividerItemDecoration mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), DividerItemDecoration.VERTICAL);

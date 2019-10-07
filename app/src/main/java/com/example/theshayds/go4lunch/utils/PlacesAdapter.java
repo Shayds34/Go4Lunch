@@ -3,9 +3,6 @@ package com.example.theshayds.go4lunch.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.location.Location;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,22 +10,23 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.example.theshayds.go4lunch.R;
 import com.example.theshayds.go4lunch.controller.PlaceActivity;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.maps.android.SphericalUtil;
-
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,6 +47,7 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
         mPlacesList = places;
     }
 
+    @NonNull
     @Override
     public PlacesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View mView = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_places_item, parent, false);
@@ -56,17 +55,10 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
         coworkerHelper = CoworkerHelper.getCoworkersCollection();
 
         final PlacesViewHolder mViewHolder = new PlacesViewHolder(mView);
-        mViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Position " + mViewHolder.getAdapterPosition());
-
-                Intent mIntent = new Intent(v.getContext(), PlaceActivity.class);
-                mIntent.putExtra("placePosition", String.valueOf(mViewHolder.getAdapterPosition()));
-
-                Log.d(TAG, "onClick: placeAddress " + mPlacesList.get(mViewHolder.getAdapterPosition()).getFormatted_address() );
-                v.getContext().startActivity(mIntent);
-            }
+        mViewHolder.itemView.setOnClickListener(v -> {
+            Intent mIntent = new Intent(v.getContext(), PlaceActivity.class);
+            mIntent.putExtra("placeId", mPlacesList.get(mViewHolder.getAdapterPosition()).getPlaceId());
+            v.getContext().startActivity(mIntent);
         });
         return mViewHolder;
     }
@@ -85,16 +77,15 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
         return mPlacesList.size();
     }
 
-    public class PlacesViewHolder extends RecyclerView.ViewHolder {
-
+    class PlacesViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.place_name)          TextView mPlaceName;
         @BindView(R.id.place_address)      TextView mAddress;
         @BindView(R.id.place_open)          TextView mOpenHour;
         @BindView(R.id.place_distance)      TextView mDistance;
         @BindView(R.id.place_people)        LinearLayout mPeopleBox;
-        @BindView(R.id.place_people_icon)   ImageView mPeopleIcon;
         @BindView(R.id.place_people_count)        TextView mPeople;
         @BindView(R.id.place_icon)       ImageView mPlaceIcon;
+        @BindView(R.id.place_rating_count) TextView mPlaceRating;
 
         PlacesViewHolder(View itemView) {
             super(itemView);
@@ -104,45 +95,34 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
         void updateWithPlaces(MyPlace place) {
 
             // Display count of people who wants to eat in this place.
-            coworkerHelper.whereEqualTo("placeChoice", place.getName()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    int count;
-
-                    if (task.isSuccessful()){
-                        count = task.getResult().size();
-
-                        if (count > 0){
-                            mPeopleBox.setVisibility(View.VISIBLE);
-                            mPeople.setText("(" + count + ")");
-                        }
-
+            coworkerHelper.whereEqualTo("placeName", place.getName()).get().addOnCompleteListener(task -> {
+                int count;
+                if (task.isSuccessful()){
+                    count = Objects.requireNonNull(task.getResult()).size();
+                    if (count > 0){
+                        mPeopleBox.setVisibility(View.VISIBLE);
+                        mPeople.setText("(" + count + ")");
                     } else {
-                        Log.d(TAG, "onComplete: Error getting documents: " + task.getException());
+                        mPeopleBox.setVisibility(View.INVISIBLE);
                     }
+                } else {
+                    mPeopleBox.setVisibility(View.INVISIBLE);
+                    Log.d(TAG, "onComplete: Error getting documents: " + task.getException());
                 }
             });
 
-            // Display distance between the user and the place.
-            // TODO Get real Lat Lng
-            LatLng userLatLng = new LatLng(0, 0);
-            LatLng placeLatLng = new LatLng(place.getLat(), place.getLng());
-
-            double distanceBetween = SphericalUtil.computeDistanceBetween(userLatLng, placeLatLng);
-            int distanceInMeters = (int) Math.round(distanceBetween);
-            Log.d(TAG, "updateWithPlaces: " + distanceInMeters);
-
-            // Set
+            // Set text to TextViews.
             mPlaceName.setText(place.getName());
-            // mAddress.setText(place.getFormatted_address());
-            mAddress.setText(distanceInMeters + "m"); // TEST
-            mDistance.setText(distanceBetween + "m");
+            mAddress.setText(place.getFormatted_address());
+            mDistance.setText(place.getDistance() + "m");
+
+            mPlaceRating.setText(" " + place.getRating());
 
             // Setup default options for GLIDE
             RequestOptions mOptions = new RequestOptions()
                     .centerCrop()
-                    .placeholder(R.drawable.ic_restaurant_marker_green) // TODO change
-                    .error(R.drawable.ic_restaurant_marker_green) // TODO change
+                    .placeholder(R.drawable.ic_photo_camera_black_24dp)
+                    .error(R.drawable.ic_photo_camera_black_24dp)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .priority(Priority.HIGH)
                     .dontAnimate()
@@ -153,16 +133,44 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
                     .apply(mOptions)
                     .into(mPlaceIcon);
 
+            try {
+                if (place.getOpeningHours().getOpen_now()){
+                    // Get day of the week to fetch the proper period of time the place is open/closed.
 
-            if(!place.getOpenNow()){
-                int mColor = mOpenHour.getResources().getColor(R.color.colorGoogle);
-                mOpenHour.setText("Closed");
+                    Calendar calendar = Calendar.getInstance();
+                    int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 2;
+                    Log.d(TAG, "updateWithPlaces: Day of Week " + dayOfWeek);
+
+                    //mContext.getString(R.string.open_until) + " " +
+                    String closingHour = place.getOpeningHours().getPeriods()[dayOfWeek].getClose().getTime();
+
+                    StringBuilder stringBuilder = new StringBuilder(closingHour);
+                    stringBuilder.insert(2, mContext.getResources().getString(R.string.hour_symbol)); // EN ":" / FR "h"
+
+                    String formatterClosingHour = mContext.getResources().getString(R.string.place_open_close_txt);
+                    formatterClosingHour = formatterClosingHour.concat(" ").concat(stringBuilder.toString());
+                    mOpenHour.setText(formatterClosingHour);
+
+                    // Set style to match Open case.
+                    int mColor = mOpenHour.getResources().getColor(R.color.colorBlack);
+                    mOpenHour.setTextColor(mColor);
+                    mOpenHour.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC));
+                } else {
+                    // Set style to match Closed case.
+                    int mColor = mOpenHour.getResources().getColor(R.color.colorPrimary);
+                    mOpenHour.setText(mContext.getString(R.string.closed));
+                    mOpenHour.setTextColor(mColor);
+                    mOpenHour.setTypeface(Typeface.DEFAULT_BOLD);
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+
+                // Set style to match Closed case in case we have an error.
+                int mColor = mOpenHour.getResources().getColor(R.color.colorPrimary);
+                mOpenHour.setText(mContext.getString(R.string.closed));
                 mOpenHour.setTextColor(mColor);
                 mOpenHour.setTypeface(Typeface.DEFAULT_BOLD);
-            } else {
-                mOpenHour.setText("Open");
             }
-            mDistance.setText(place.getScope());
         }
     }
 

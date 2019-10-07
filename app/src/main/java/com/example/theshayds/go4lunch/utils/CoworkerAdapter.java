@@ -4,15 +4,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
@@ -48,36 +48,28 @@ public class CoworkerAdapter extends FirestoreRecyclerAdapter<Coworker, Coworker
     public void onDataChanged(){
         super.onDataChanged();
         this.callback.onDataChanged();
-
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CoworkersViewHolder holder, int position, @NonNull Coworker model) {
+    public void onBindViewHolder(@NonNull CoworkersViewHolder holder, int position, @NonNull Coworker coworker) {
         Log.d(TAG, "onBindViewHolder is called.");
-        holder.updateWithCoworkers(model, activityOrFragment);
+        holder.updateWithCoworkers(coworker, activityOrFragment);
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), PlaceActivity.class);
+            intent.putExtra("placeId", coworker.getPlaceID());
+            mContext.startActivity(intent);
+        });
     }
 
     @NonNull
     @Override
     public CoworkersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View mView = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_coworkers_item, parent, false);
-
-        final CoworkersViewHolder mViewHolder = new CoworkersViewHolder(mView);
-        mViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(v.getContext(), "AdapterPosition " + mViewHolder.getAdapterPosition(), Toast.LENGTH_SHORT).show();
-
-                Intent mIntent = new Intent(mContext, PlaceActivity.class);
-                // mIntent.putExtra("placeID", );
-
-            }
-        });
-        return mViewHolder;
+        return new CoworkersViewHolder(mView);
     }
 
     class CoworkersViewHolder extends RecyclerView.ViewHolder {
-        String uid;
         ImageView coworkerPicture;
         TextView coworkerChoice;
         String coworkerName;
@@ -97,10 +89,10 @@ public class CoworkerAdapter extends FirestoreRecyclerAdapter<Coworker, Coworker
                     .into(coworkerPicture);
 
             coworkerName = coworker.getUserName();
-            coworkerPlace = coworker.getPlaceChoice();
+            coworkerPlace = coworker.getPlaceName();
 
             if (!coworker.getHasChosen()){
-                coworkerChoice.setText(coworkerName + " hasn't decided yet.");
+                coworkerChoice.setText(coworkerName + " hasn't decided yet."); // TODO Extract String Resource
                 coworkerChoice.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC));
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -108,10 +100,15 @@ public class CoworkerAdapter extends FirestoreRecyclerAdapter<Coworker, Coworker
                 }
 
             } else {
-                if (fromWhere.equals("PlaceActivity")){
-                    coworkerChoice.setText(coworkerName + " is joining!");
-                } else if (fromWhere.equals("CoworkersFragment")){
-                    coworkerChoice.setText(coworkerName + " is eating at " + coworkerPlace + ".");
+                switch (fromWhere){
+                    case "PlaceActivity": {
+                        coworkerChoice.setText(coworkerName + " is joining!"); // TODO Extract String Resource
+                        break;
+                    }
+                    case "CoworkersFragment": {
+                        coworkerChoice.setText(coworkerName + " is eating at " + coworkerPlace + "."); // TODO Extract String Resource
+                        break;
+                    }
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     coworkerChoice.setTextColor(mContext.getColor(R.color.colorBlack));

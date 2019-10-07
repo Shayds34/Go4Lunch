@@ -28,6 +28,7 @@ import com.example.theshayds.go4lunch.utils.CoworkerHelper;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.Query;
 
@@ -109,10 +110,23 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
                 like = true;
             }
         });
+
+        findViewById(R.id.fab).setOnClickListener(v -> {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            // Update Firestore database with user's choice.
+            if (currentUser != null) {
+                String uid = currentUser.getUid();
+                String userName = currentUser.getDisplayName();
+
+                CoworkerHelper.updatePlace(uid, userName,true, placeId, placeName);
+            } else {
+                Toast.makeText(PlaceActivity.this, getResources().getString(R.string.authentication_needed), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void fetchPlaceInfo(String placeId) {
-        disposable = ApiStreams.streamDetailsPlaces(placeId).subscribeWith(new DisposableObserver<PlaceDetail>() {
+        disposable = ApiStreams.streamDetailsPlaces(placeId, getResources().getString(R.string.google_api_key)).subscribeWith(new DisposableObserver<PlaceDetail>() {
             @Override
             public void onNext(PlaceDetail placeDetail) {
                 Log.d(TAG, "onNext: " + placeDetail.getStatus());
@@ -125,7 +139,7 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
                                 + "&key=AIzaSyBEzFjiM61SPHxlMp601h_2ztVKCg80gi8";
                     }
                     phoneNumberToCall = placeDetail.getResult().getFormatted_phone_number();
-                    placeURI = placeDetail.getResult().getUrl();
+                    placeURI = placeDetail.getResult().getWebsite();
                 }
             }
 

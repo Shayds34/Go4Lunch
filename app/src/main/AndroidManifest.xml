@@ -38,6 +38,8 @@
 
         <activity
             android:name=".controller.AuthenticationActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -51,13 +53,25 @@
             android:value="@string/facebook_app_id"
             tools:replace="android:value" />
 
-        <activity android:name=".controller.MainActivity" />
-        <activity android:name=".controller.PlaceActivity" />
-        <activity android:name=".controller.BaseActivity" />
+        <activity android:name=".controller.MainActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".controller.PlaceActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".controller.BaseActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".controller.SettingsActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:parentActivityName=".controller.MainActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+        <receiver android:name=".utils.NotificationsService" />
     </application>
 
 </manifest>

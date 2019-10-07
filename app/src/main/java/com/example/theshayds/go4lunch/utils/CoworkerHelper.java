@@ -2,13 +2,10 @@ package com.example.theshayds.go4lunch.utils;
 
 import com.example.theshayds.go4lunch.models.Coworker;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-
-import org.w3c.dom.Document;
 
 public class CoworkerHelper {
 
@@ -20,7 +17,7 @@ public class CoworkerHelper {
 
     // Collection Reference
     public static CollectionReference getCoworkersCollection(){
-        return FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
+        return getInstance().collection(COLLECTION_NAME);
     }
 
     public static Query getAllCoworkers(){
@@ -28,9 +25,20 @@ public class CoworkerHelper {
     }
 
     // Create
-    public static Task<Void> createUser(String uid, String username, String urlPicture, boolean hasChosen, String choice){
-        Coworker userToCreate = new Coworker(uid, username, urlPicture, hasChosen, choice);
-        return CoworkerHelper.getCoworkersCollection().document(uid).set(userToCreate);
+    public static void createUser(String uid,
+                                  String username,
+                                  String urlPicture,
+                                  boolean hasChosen,
+                                  String placeID,
+                                  String placeName,
+                                  String placeAddress,
+                                  String placeWebsite,
+                                  String placePhoto,
+                                  String placePhone,
+                                  String placeUrl){
+
+        Coworker userToCreate = new Coworker(uid, username, urlPicture, hasChosen, placeID, placeName, placeAddress, placeWebsite, placePhoto, placePhone, placeUrl);
+        CoworkerHelper.getCoworkersCollection().document(uid).set(userToCreate);
     }
 
     // Get
@@ -38,18 +46,16 @@ public class CoworkerHelper {
         return CoworkerHelper.getCoworkersCollection().document(uid).get();
     }
 
-    // Update
-    public static Task<Void> updateUsername(String uid, String userName){
-        return CoworkerHelper.getCoworkersCollection().document(uid).update("username", userName);
-    }
+    public static Task<Void> updatePlace(String uid,
+                                         String username,
+                                         boolean hasChosen,
+                                         String placeID, String placeName){
 
-    public static Task<Void> updateHasChosen(String uid, boolean hasChosen){
-        return CoworkerHelper.getCoworkersCollection().document(uid).update("hasChosen", hasChosen);
-    }
-
-
-    public static Task<Void> updatePlace(String uid, String placeChoice){
-        return CoworkerHelper.getCoworkersCollection().document(uid).update("placeChoice", placeChoice);
+        return CoworkerHelper.getCoworkersCollection().document(uid).update(
+                "userName", username,
+                "hasChosen", hasChosen,
+                "placeName", placeName,
+                "placeID", placeID);
     }
 
     // Delete user (not used yet)
