@@ -33,7 +33,7 @@ env:
 
 before_install:
   - yes | sdkmanager "platforms;android-28"
-  -
+
 before_script:
   - chmod +x gradlew
   - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
