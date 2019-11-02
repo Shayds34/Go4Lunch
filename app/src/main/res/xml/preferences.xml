@@ -1,22 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="General" >
+    <PreferenceCategory android:title="Notifications" >
 
         <SwitchPreference
-            android:key="mNotifications"
+            android:key="notifications"
             android:title="@string/title_notifications"
             android:summaryOn="@string/notifications_on"
             android:summaryOff="@string/notifications_off" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Information" >
-        <Preference
-            android:key="mHelp"
-            android:title="@string/title_help" />
-
-        <Preference
-            android:key="mAbout"
-            android:title="@string/title_about" />
-    </PreferenceCategory>
 </PreferenceScreen>
