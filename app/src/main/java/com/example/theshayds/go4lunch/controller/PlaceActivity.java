@@ -143,16 +143,18 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
 
         // Set the alarm at noon or the next day at noon.
         if (hourOfToday < 12) {
+            // Triggers at noon the same day.
             triggerCal.set(Calendar.HOUR_OF_DAY, 0);
             triggerCal.set(Calendar.MINUTE, 0);
             triggerCal.set(Calendar.SECOND, 0);
             triggerCal.add(Calendar.MILLISECOND, 1000 * 60 * 60 *  12);
         } else {
+            // The next day at noon.
             triggerCal.set(Calendar.HOUR_OF_DAY, 0);
             triggerCal.set(Calendar.MINUTE, 0);
             triggerCal.set(Calendar.SECOND, 0);
-            // triggerCal.add(Calendar.DAY_OF_MONTH, 1);
-            triggerCal.add(Calendar.MILLISECOND,  54000000 + 2640000 );
+            triggerCal.add(Calendar.DAY_OF_MONTH, 1);
+            triggerCal.add(Calendar.MILLISECOND,  1000 * 60 * 60 * 12);
         }
 
         long triggerTime = triggerCal.getTimeInMillis();
