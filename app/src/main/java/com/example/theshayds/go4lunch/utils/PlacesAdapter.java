@@ -23,8 +23,8 @@ import com.example.theshayds.go4lunch.controller.PlaceActivity;
 import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.google.firebase.firestore.CollectionReference;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -41,6 +41,7 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
     // Firestore
     private CollectionReference coworkerHelper;
 
+    private String closingHour;
 
     public PlacesAdapter(Context context, ArrayList<MyPlace> places) {
         mContext = context;
@@ -101,7 +102,9 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
                     count = Objects.requireNonNull(task.getResult()).size();
                     if (count > 0){
                         mPeopleBox.setVisibility(View.VISIBLE);
-                        mPeople.setText("(" + count + ")");
+                        String people = "(";
+                        people = people.concat(String.valueOf(count)).concat(")");
+                        mPeople.setText(people);
                     } else {
                         mPeopleBox.setVisibility(View.INVISIBLE);
                     }
@@ -114,9 +117,19 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
             // Set text to TextViews.
             mPlaceName.setText(place.getName());
             mAddress.setText(place.getFormatted_address());
-            mDistance.setText(place.getDistance() + "m");
 
-            mPlaceRating.setText(" " + place.getRating());
+            String distance = String.valueOf(place.getDistance());
+            distance = distance.concat("m");
+            mDistance.setText(distance);
+
+            if (place.getRating() != null){
+                float rating = Float.valueOf(place.getRating());
+                DecimalFormat df = new DecimalFormat("#.##");
+
+                String displayRating = " ";
+                displayRating = displayRating.concat(df.format(rating));
+                mPlaceRating.setText(displayRating);
+            }
 
             // Setup default options for GLIDE
             RequestOptions mOptions = new RequestOptions()
@@ -135,18 +148,30 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
 
             try {
                 if (place.getOpeningHours().getOpen_now()){
-                    // Get day of the week to fetch the proper period of time the place is open/closed.
+                    // Get day of the week to fetch the proper period of time.
+                    // The place is open/closed.
 
                     Calendar calendar = Calendar.getInstance();
-                    int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 2;
-                    Log.d(TAG, "updateWithPlaces: Day of Week " + dayOfWeek);
+                    // DAY_OF_WEEK is from 1 to 7. We need to have from 0 to 6 to match array (that's why "-1"
+                    int dayOfWeekIndex = calendar.get(Calendar.DAY_OF_WEEK) - 1;
 
-                    //mContext.getString(R.string.open_until) + " " +
-                    String closingHour = place.getOpeningHours().getPeriods()[dayOfWeek].getClose().getTime();
+                    // Get the current day and compare to closing hour (morning or evening)
+                    for (int i = 0; i < place.getOpeningHours().getPeriods().length; i++) {
+                        int day = Integer.parseInt(place.getOpeningHours().getPeriods()[i].getClose().getDay());
 
+                        if (day == dayOfWeekIndex){
+                            closingHour = place.getOpeningHours().getPeriods()[i].getClose().getTime();
+                            Log.d(TAG, "updateWithPlaces: " + Integer.parseInt(closingHour));
+                            if (Integer.parseInt(closingHour) < calendar.get(Calendar.HOUR_OF_DAY)){
+                                Log.d(TAG, "updateWithPlaces: closing hour < hour of day");
+                            }
+                        }
+
+                    }
+
+                    // Format hour style to match Local
                     StringBuilder stringBuilder = new StringBuilder(closingHour);
                     stringBuilder.insert(2, mContext.getResources().getString(R.string.hour_symbol)); // EN ":" / FR "h"
-
                     String formatterClosingHour = mContext.getResources().getString(R.string.place_open_close_txt);
                     formatterClosingHour = formatterClosingHour.concat(" ").concat(stringBuilder.toString());
                     mOpenHour.setText(formatterClosingHour);
@@ -173,7 +198,4 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.PlacesView
             }
         }
     }
-
-
-
 }

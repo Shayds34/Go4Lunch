@@ -1,5 +1,6 @@
 package com.example.theshayds.go4lunch.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -38,7 +39,7 @@ public class PlacesAutocompleteAdapter extends ArrayAdapter<Prediction> {
     @NonNull
     @Override
     public View getView (int position, @Nullable View convertView, @NonNull ViewGroup parent){
-        View row = LayoutInflater.from(context).inflate(R.layout.place_row_layout, null);
+        @SuppressLint({"ViewHolder", "InflateParams"}) View row = LayoutInflater.from(context).inflate(R.layout.place_row_layout, null);
 
         if (predictions != null && predictions.size() > 0){
             Prediction prediction = predictions.get(position);
@@ -114,9 +115,11 @@ public class PlacesAutocompleteAdapter extends ArrayAdapter<Prediction> {
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             autocompleteAdapter.predictions.clear();
 
-            for (Prediction prediction :  (List<Prediction>) filterResults.values) {
-                if (prediction.getTypes().contains("restaurant")){
-                    autocompleteAdapter.predictions.add(prediction);
+            if (filterResults != null){
+                for (Prediction prediction :  (List<Prediction>) filterResults.values) {
+                    if (prediction.getTypes().contains("restaurant")){
+                        autocompleteAdapter.predictions.add(prediction);
+                    }
                 }
             }
             autocompleteAdapter.notifyDataSetChanged();

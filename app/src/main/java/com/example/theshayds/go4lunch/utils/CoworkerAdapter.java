@@ -55,11 +55,13 @@ public class CoworkerAdapter extends FirestoreRecyclerAdapter<Coworker, Coworker
         Log.d(TAG, "onBindViewHolder is called.");
         holder.updateWithCoworkers(coworker, activityOrFragment);
 
-        holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), PlaceActivity.class);
-            intent.putExtra("placeId", coworker.getPlaceID());
-            mContext.startActivity(intent);
-        });
+        if (activityOrFragment.equals("CoworkersFragment")){
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), PlaceActivity.class);
+                intent.putExtra("placeId", coworker.getPlaceID());
+                mContext.startActivity(intent);
+            });
+        }
     }
 
     @NonNull
@@ -82,7 +84,6 @@ public class CoworkerAdapter extends FirestoreRecyclerAdapter<Coworker, Coworker
         }
 
         void updateWithCoworkers(Coworker coworker, String fromWhere) {
-
             // Setup default options for GLIDE
             glide.load(coworker.getUrlPicture())
                     .apply(RequestOptions.circleCropTransform())
@@ -92,21 +93,30 @@ public class CoworkerAdapter extends FirestoreRecyclerAdapter<Coworker, Coworker
             coworkerPlace = coworker.getPlaceName();
 
             if (!coworker.getHasChosen()){
-                coworkerChoice.setText(coworkerName + " hasn't decided yet."); // TODO Extract String Resource
+                // Concat coworker name with his/her choice.
+                String coworkerString = coworker.getUserName();
+                coworkerString = coworkerString.concat(mContext.getResources().getString(R.string.no_choice_yet));
+                coworkerChoice.setText(coworkerString);
                 coworkerChoice.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC));
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     coworkerChoice.setTextColor(mContext.getColor(R.color.grey_500));
                 }
-
             } else {
+                // Display a things differently if the list is called in PlaceActivity or CoworkersFragment
                 switch (fromWhere){
                     case "PlaceActivity": {
-                        coworkerChoice.setText(coworkerName + " is joining!"); // TODO Extract String Resource
+                        // Display "Coworker is joining
+                        String coworkerJoining = coworker.getUserName();
+                        coworkerJoining = coworkerJoining.concat(mContext.getResources().getString(R.string.is_joining));
+                        coworkerChoice.setText(coworkerJoining);
                         break;
                     }
                     case "CoworkersFragment": {
-                        coworkerChoice.setText(coworkerName + " is eating at " + coworkerPlace + "."); // TODO Extract String Resource
+                        // Display "Coworker has not decided yet." or "Coworker is eating at ..."
+                        String coworkerIsEating = coworker.getUserName();
+                        coworkerIsEating = coworkerIsEating.concat(mContext.getResources().getString(R.string.is_eating)).concat(coworker.getPlaceName());
+                        coworkerChoice.setText(coworkerIsEating);
                         break;
                     }
                 }
