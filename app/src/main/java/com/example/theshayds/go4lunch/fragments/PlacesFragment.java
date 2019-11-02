@@ -1,25 +1,20 @@
 package com.example.theshayds.go4lunch.fragments;
 
-
-import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ProgressBar;
-import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.example.theshayds.go4lunch.R;
+import com.example.theshayds.go4lunch.pojo.MyPlace;
 import com.example.theshayds.go4lunch.utils.PlacesAdapter;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 public class PlacesFragment extends Fragment {
     public static final String TAG = "PlacesFragment";
@@ -28,10 +23,7 @@ public class PlacesFragment extends Fragment {
 
     private View mView;
 
-    // Use for Design UI
-    ProgressBar mProgressBar;
-    RecyclerView mRecyclerView;
-    PlacesAdapter adapter;
+    private PlacesAdapter adapter;
 
     public PlacesFragment() {
         // Required empty public constructor
@@ -59,9 +51,12 @@ public class PlacesFragment extends Fragment {
     }
 
     private void configureRecyclerView() {
-        mRecyclerView = mView.findViewById(R.id.recycler_view);
+        // Use for Design UI
+        RecyclerView mRecyclerView = mView.findViewById(R.id.recycler_view);
 
-        Collections.sort(myPlaceArrayList, ((o1, o2) -> o1.getDistance() - o2.getDistance()));
+        if (myPlaceArrayList != null){
+            Collections.sort(myPlaceArrayList, ((o1, o2) -> o1.getDistance() - o2.getDistance()));
+        }
         adapter = new PlacesAdapter(getActivity(), myPlaceArrayList);
 
         DividerItemDecoration mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), DividerItemDecoration.VERTICAL);

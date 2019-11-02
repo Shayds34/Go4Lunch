@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -80,7 +79,7 @@ public class CoworkersFragment extends Fragment implements CoworkerAdapter.Liste
         adapter = new CoworkerAdapter(getActivity(), mOptions, Glide.with(Objects.requireNonNull(getActivity())),this, "CoworkersFragment");
 
         DividerItemDecoration mDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), DividerItemDecoration.VERTICAL);
-        mDividerItemDecoration.setDrawable(Objects.requireNonNull(ResourcesCompat.getDrawable(getResources(), R.drawable.line_divider, null)));
+        mDividerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.line_divider));
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setAdapter(adapter);

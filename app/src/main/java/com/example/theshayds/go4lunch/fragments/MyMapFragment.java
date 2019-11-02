@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,13 +12,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
 import com.example.theshayds.go4lunch.R;
 import com.example.theshayds.go4lunch.controller.PlaceActivity;
 import com.example.theshayds.go4lunch.pojo.MyPlace;
@@ -29,7 +26,6 @@ import com.example.theshayds.go4lunch.utils.CoworkerHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -42,13 +38,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.SphericalUtil;
-
 import java.util.ArrayList;
 import java.util.Objects;
-
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
-
 
 public class MyMapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener, GoogleApiClient.OnConnectionFailedListener {
     public static final String TAG = "MyMapFragment";
@@ -71,12 +64,9 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
 
     private Location mLastLocation;
 
-    private static final long UPDATE_FASTEST_INTERVAL = 1000 * 5; // 5 SEC
-    private static final int UPDATE_INTERVAL = 1000 * 10;  // 10 SEC
-    private static final int UPDATE_DISPLACEMENT = 20; // METERS
-
-    LocationManager locationManager;
-    FusedLocationProviderClient fusedLocationProviderClient;
+    private static final long UPDATE_FASTEST_INTERVAL = 1000 * 10; // 10 SEC
+    private static final int UPDATE_INTERVAL = 1000 * 30;  // 30 SEC
+    private static final int UPDATE_DISPLACEMENT = 100; // METERS
     //endregion
 
     private GoogleApiClient mGoogleApiClient;
@@ -94,7 +84,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     public static MyMapFragment getInstance() {
-        if (instance == null){
+        if (instance == null) {
             instance = new MyMapFragment();
         }
         return instance;
@@ -106,10 +96,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        Log.d(TAG, "onCreateView: ");
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_my_map_fragment2, container, false);
@@ -128,9 +115,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
             Log.d("onCreate", "Google Play Services not available. Ending Test case.");
             Objects.requireNonNull(getActivity()).finish();
         }
-        else {
-            Log.d("onCreate", "Google Play Services available. Continuing.");
-        }
 
         // Create map and get notify when map is ready to be used.
         mapView.onCreate(savedInstanceState);
@@ -143,7 +127,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        Log.d(TAG, "onMapReady: ");
 
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -166,7 +149,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     private synchronized void buildGoogleApiClient() {
-        Log.d(TAG, "buildGoogleApiClient: ");
         mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -176,14 +158,11 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     private void addPlacesToMap(String currentStringLocation) {
-        Log.d(TAG, "addPlacesToMap: ");
         mMyPlaceArrayList = new ArrayList<>();
-        disposable = ApiStreams.streamNearbyPlacesAndGetDetails(currentStringLocation, getResources().getString(R.string.google_api_key)).subscribeWith(new DisposableObserver<PlaceDetail>() {
+        disposable = ApiStreams.streamNearbyPlacesAndGetDetails(currentStringLocation, mContext.getResources().getString(R.string.google_api_key)).subscribeWith(new DisposableObserver<PlaceDetail>() {
             @Override
             public void onNext(PlaceDetail response) {
                 MyPlace mPlace = new MyPlace();
-                Log.d(TAG, "onNext: " + response.getStatus());
-
                 if (response.getResult() != null) {
                     // Working
                     mPlace.setPlaceId(response.getResult().getPlace_id());
@@ -204,7 +183,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
 
                     try {
                         mPlace.setOpeningHours(response.getResult().getOpening_hours());
-                        Log.d(TAG, "onNext: " + response.getResult().getOpening_hours());
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
@@ -234,7 +212,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     private void updateMarkers(ArrayList<MyPlace> mMyPlaceArrayList) {
-        Log.d(TAG, "updateMarkers: ");
         try {
             mMap.clear();
 
@@ -253,7 +230,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
                                     .snippet(place.getPlaceId()));
 
                             // Change marker's color according to users' choices
-                            if (isEmpty){
+                            if (isEmpty) {
                                 myMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
                             } else {
                                 myMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
@@ -261,7 +238,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
                         });
             }
         } catch (Exception e) {
-            Log.d("onResponse", "There is an error");
             e.printStackTrace();
         }
 
@@ -281,10 +257,9 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
     }
 
     private void checkLocationPermission() {
-        Log.d(TAG, "checkLocationPermission: ");
         if (ContextCompat.checkSelfPermission(mContext,
                 Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED){
+                != PackageManager.PERMISSION_GRANTED) {
 
             // Asking user if explanation is needed
             if (ActivityCompat.shouldShowRequestPermissionRationale(Objects.requireNonNull(getActivity()), Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -310,8 +285,8 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
         Log.d(TAG, "isGooglePlayServicesAvailable: ");
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
         int result = googleAPI.isGooglePlayServicesAvailable(mContext);
-        if (result != ConnectionResult.SUCCESS){
-            if (googleAPI.isUserResolvableError(result)){
+        if (result != ConnectionResult.SUCCESS) {
+            if (googleAPI.isUserResolvableError(result)) {
                 googleAPI.getErrorDialog(getActivity(), result,
                         0).show();
             }
@@ -322,7 +297,6 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.d(TAG, "onConnected: ");
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         mLocationRequest.setFastestInterval(UPDATE_FASTEST_INTERVAL);
@@ -337,10 +311,11 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged: entered");
-
         mLastLocation = location;
         mMap.clear();
+        if (mMyPlaceArrayList != null){
+            mMyPlaceArrayList.clear();
+        }
 
         mLatitude = location.getLatitude();
         mLongitude = location.getLongitude();
@@ -355,12 +330,10 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback, Googl
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     public Location getLastLocation() {
