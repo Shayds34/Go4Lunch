@@ -56,6 +56,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     RelativeLayout searchView;
 
     ImageView mPhoto;
+    String uid, userName, urlPicture;
     TextView username, email;
 
     FirebaseUser currentUser;
@@ -101,9 +102,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         this.configureNavigationDrawer();
 
         //region {Create Firestore Collection "Users" and create current User.}
-        String uid = currentUser.getUid();
-        String userName = Objects.requireNonNull(currentUser.getDisplayName());
-        String urlPicture = (Objects.requireNonNull(currentUser).getPhotoUrl() != null) ? Objects.requireNonNull(currentUser.getPhotoUrl()).toString() : null;
+        uid = currentUser.getUid();
+        if (currentUser.getDisplayName() != null){
+            userName = Objects.requireNonNull(currentUser.getDisplayName());
+            urlPicture = (Objects.requireNonNull(currentUser).getPhotoUrl() != null) ? Objects.requireNonNull(currentUser.getPhotoUrl()).toString() : null;
+        } else {
+            userName = "";
+            urlPicture = "";
+        }
 
         DocumentReference docRef = CoworkerHelper.getCoworkersCollection().document(uid);
         docRef.get().addOnCompleteListener(task -> {
@@ -113,7 +119,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if (!document.exists()) {
                     // User doesn't exist in database, create user.
                     Log.d(TAG, "No such document");
-                    CoworkerHelper.createUser(uid, userName, urlPicture, false, "", "", "", "", "", "", "");
+                    CoworkerHelper.createUser(uid, userName, urlPicture, false, "", "");
                 }
             } else {
                 // Failed getting document
@@ -127,7 +133,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         searchView = findViewById(R.id.search_layout);
         appBarLayout = findViewById(R.id.appBarLayout);
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("I'm Hungry !");
+        toolbar.setTitle(getString(R.string.toolbar_hungry));
         setSupportActionBar(toolbar);
     }
 
@@ -174,6 +180,22 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                         .load(mAuth.getCurrentUser().getPhotoUrl())
                         .apply(RequestOptions.circleCropTransform())
                         .into(mPhoto);
+            } else {
+
+                DocumentReference dr = CoworkerHelper.getCoworkersCollection().document(mAuth.getCurrentUser().getUid());
+                dr.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()){
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null){
+                            Log.d(TAG, "updateUIWhenCreating: photo is " + document.getString("urlPicture"));
+                            Glide.with(getApplicationContext())
+                                    .load(document.getString("urlPicture"))
+                                    .apply(RequestOptions.circleCropTransform())
+                                    .into(mPhoto);
+                        }
+                    }
+                });
+
             }
         }
     }

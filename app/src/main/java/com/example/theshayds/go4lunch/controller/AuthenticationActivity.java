@@ -23,7 +23,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
@@ -46,9 +45,6 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
     public static final String TAG = "AuthenticationActivity";
     public static final int RC_SIGN_IN = 9001;
 
-    // Check Network status
-    // private NetworkStatus mNetworkStatus;
-
     // Twitter Sign In
     private TwitterLoginButton mTwitterLoginButton;
 
@@ -66,11 +62,6 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
     private FirebaseAuth mAuth;
 
     //endregion
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -129,12 +120,10 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                     Log.d(TAG, "facebook:onSuccess " + loginResult);
                     firebaseAuthWithFacebook(loginResult.getAccessToken());
                 }
-
                 @Override
                 public void onCancel() {
                     Log.d(TAG, "facebook:onCancel");
                 }
-
                 @Override
                 public void onError(FacebookException error) {
                     Log.d(TAG, "facebook:onError", error);
@@ -207,7 +196,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithEmail:failure", task.getException());
-                        Toast.makeText(AuthenticationActivity.this, "Authentication failed.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(AuthenticationActivity.this, R.string.auth_failed, Toast.LENGTH_LONG).show();
                     }
 
                     // Start Exclude
@@ -257,7 +246,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                     } else {
                         // If sign in fails, display a message to user.
                         Log.w(TAG, "signInWithGoogle:failure", task.getException());
-                        Snackbar.make(findViewById(R.id.main_layout), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
+                        Toast.makeText(AuthenticationActivity.this, R.string.auth_failed, Toast.LENGTH_LONG).show();
                     }
                     hideProgressDialog();
                 });
@@ -285,7 +274,7 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
                     } else {
                         // If sign in fails, display a message to user.
                         Log.w(TAG, "signInWithFacebook:failure", task.getException());
-                        Snackbar.make(findViewById(R.id.main_layout), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
+                        Toast.makeText(AuthenticationActivity.this, R.string.auth_failed, Toast.LENGTH_LONG).show();
                     }
                     hideProgressDialog();
                 });
@@ -352,5 +341,10 @@ public class  AuthenticationActivity extends BaseActivity implements View.OnClic
             } else if (i == R.id.sign_in_with_google) {
                 signInWithGoogle();
             }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 }

@@ -1,5 +1,8 @@
 package com.example.theshayds.go4lunch.controller;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +28,7 @@ import com.example.theshayds.go4lunch.pojo.PlaceDetail;
 import com.example.theshayds.go4lunch.utils.ApiStreams;
 import com.example.theshayds.go4lunch.utils.CoworkerAdapter;
 import com.example.theshayds.go4lunch.utils.CoworkerHelper;
+import com.example.theshayds.go4lunch.utils.NotificationsService;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +36,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.Query;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Objects;
 
 import io.reactivex.disposables.Disposable;
@@ -116,13 +122,42 @@ public class PlaceActivity extends BaseActivity implements CoworkerAdapter.Liste
             // Update Firestore database with user's choice.
             if (currentUser != null) {
                 String uid = currentUser.getUid();
-                String userName = currentUser.getDisplayName();
+                CoworkerHelper.updatePlace(uid,true, placeId, placeName);
 
-                CoworkerHelper.updatePlace(uid, userName,true, placeId, placeName);
+                startAlarmReceiver();
             } else {
                 Toast.makeText(PlaceActivity.this, getResources().getString(R.string.authentication_needed), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // If user makes a choice, start alarm receiver to reset his choice next day at noon
+    private void startAlarmReceiver(){
+        // Build new alarmManager using ALARM_SERVICE
+        Intent notificationIntent = new Intent(this, NotificationsService.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+
+        Calendar triggerCal = new GregorianCalendar();
+        int hourOfToday = triggerCal.get(Calendar.HOUR_OF_DAY);
+
+        // Set the alarm at noon or the next day at noon.
+        if (hourOfToday < 12) {
+            triggerCal.set(Calendar.HOUR_OF_DAY, 0);
+            triggerCal.set(Calendar.MINUTE, 0);
+            triggerCal.set(Calendar.SECOND, 0);
+            triggerCal.add(Calendar.MILLISECOND, 1000 * 60 * 60 *  12);
+        } else {
+            triggerCal.set(Calendar.HOUR_OF_DAY, 0);
+            triggerCal.set(Calendar.MINUTE, 0);
+            triggerCal.set(Calendar.SECOND, 0);
+            // triggerCal.add(Calendar.DAY_OF_MONTH, 1);
+            triggerCal.add(Calendar.MILLISECOND,  54000000 + 2640000 );
+        }
+
+        long triggerTime = triggerCal.getTimeInMillis();
+
+        alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
     }
 
     private void fetchPlaceInfo(String placeId) {
