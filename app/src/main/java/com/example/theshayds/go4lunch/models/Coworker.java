@@ -76,12 +76,7 @@ public class Coworker implements Parcelable {
                     String urlPicture,
                     boolean hasChosen,
                     String placeID,
-                    String placeName,
-                    String placePhone,
-                    String placeWebsite,
-                    String placeUrl,
-                    String placePhoto,
-                    String placeAddress) {
+                    String placeName) {
 
         this.uid = uid;
         this.userName = userName;
@@ -89,11 +84,6 @@ public class Coworker implements Parcelable {
         this.hasChosen = hasChosen;
         this.placeID = placeID;
         this.placeName = placeName;
-        this.placePhone = placePhone;
-        this.placeWebsite = placeWebsite;
-        this.placeUrl = placeUrl;
-        this.placePhoto = placePhoto;
-        this.placeAddress = placeAddress;
     }
 
     protected Coworker(Parcel in) {
