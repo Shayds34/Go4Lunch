@@ -217,8 +217,8 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
 
-    <string name="CONSUMER_KEY" translatable="false">0X6xgBDdAYx48NmC9oQRBAXJ7</string>
-    <string name="CONSUMER_SECRET" translatable="false">EMmLHXzyi12Qet4fiS41bqzJWqLXsP6S1XbLdmXan9LvrnOS6A</string>
+    <string name="CONSUMER_KEY" translatable="false">YOUR_CONSUMER_KEY_HERE</string> 
+    <string name="CONSUMER_SECRET" translatable="false">YOU_CONSUMER_SECRET_HERE</string>
 
     <string name="image_desc_restaurant" translatable="false">Restaurant Picture</string>
     <string name="no_choice_yet">has not decided yet</string>
